@@ -21,7 +21,7 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
   # end
 
   @tag :authentication
-  describe "register/4" do
+  describe "Authentication.register/4" do
     @tag :authentication
     test "successfully registers user and returns session" do
       deps = %{
