@@ -8,6 +8,6 @@ defmodule CcSpendingApi.Authentication.Application.Handlers.LogoutUserHandler do
         }
 
   def handle(%LogoutUser{} = command, deps) do
-    AuthenticationService.logout(command.token)
+    AuthenticationService.logout(command.token, deps)
   end
 end

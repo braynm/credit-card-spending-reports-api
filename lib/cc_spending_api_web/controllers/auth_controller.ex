@@ -62,16 +62,18 @@ defmodule CcSpendingApiWeb.AuthController do
   end
 
   def logout(conn, _params) do
-    token = Guardian.Plug.current_token(conn)
+    token = CcSpendingApiWeb.Plugs.ValidateGuardianSession.get_current_token(conn)
 
     case Authentication.logout(token) do
       {:ok, :ok} ->
         conn
         |> put_status(:ok)
-        |> render(:logout_success, %{message: "Successfully logged out"})
+        |> json(%{message: "Successfully logged out"})
 
       {:error, error} ->
-        {:error, error}
+        conn
+        |> put_status(400)
+        |> json(%{error: "Something went wrong, Please try again later."})
     end
   end
 

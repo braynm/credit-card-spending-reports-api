@@ -52,6 +52,7 @@ defmodule CcSpendingApiWeb.Router do
     pipe_through [:api, :guardian_auth, :guardian_validate_session]
 
     get "/auth/test", AuthController, :test
+    get "/auth/logout", AuthController, :logout
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

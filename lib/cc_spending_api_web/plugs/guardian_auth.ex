@@ -46,6 +46,10 @@ defmodule CcSpendingApiWeb.Plugs.ValidateGuardianSession do
     end
   end
 
+  def get_current_token(conn) do
+    extract_from_authorization(conn)
+  end
+
   defp extract_from_authorization(conn) do
     case get_req_header(conn, "authorization") do
       ["Bearer " <> token] -> String.trim(token)
