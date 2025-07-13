@@ -122,9 +122,11 @@ defmodule CcSpendingApi.Authentication do
   """
   @spec validate_session(String.t(), map()) :: validation_result()
   def validate_session(token, deps \\ nil) do
+    deps = deps || default_deps()
+
     %{token: token}
-    |> ValidationSession.new()
-    |> ValidateSessionHandler.handle()
+    |> ValidateSession.new()
+    |> ValidateSessionHandler.handle(deps)
   end
 
   @doc """

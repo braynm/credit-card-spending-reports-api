@@ -29,7 +29,7 @@ defmodule CcSpendingApi.Authentication.Infra.GuardianSessionRepository do
   end
 
   def validate_token(token) when is_binary(token) do
-    with {:ok, claims} <- Guadian.decode_and_verify(token),
+    with {:ok, claims} <- GuardianWeb.decode_and_verify(token),
          {:ok, user} <- GuardianWeb.resource_from_claims(claims),
          {:ok, session} <- build_session_from_claims(claims, user) do
       Result.ok(session)
@@ -57,7 +57,7 @@ defmodule CcSpendingApi.Authentication.Infra.GuardianSessionRepository do
 
   def revoke_all_user_tokens(user_id) when is_binary(user_id) do
     with {:ok, user} <- EctoUserRepository.get_by_id(user_id) do
-      case DB.revoke_all_tokens_for_user(user, Guardian) do
+      case DB.revoke_all_tokens_for_user(user, GuardianWeb) do
         :ok -> Result.ok(:ok)
         {:error, reason} -> Result.error(reason)
       end

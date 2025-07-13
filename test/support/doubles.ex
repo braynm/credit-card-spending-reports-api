@@ -37,24 +37,26 @@ defmodule CcSpendingApi.Test.Doubles do
       expires_at: DateTime.add(DateTime.utc_now(), 3600, :second)
     }
 
-    double =
-      SessionRepository
-      |> Double.stub(:create_token, fn session ->
+    defaults = %{
+      create_token: fn session ->
         Result.ok({%{session | id: "test-session-id"}, "test-token"})
-      end)
-      |> Double.stub(:validate_token, fn _token -> Result.ok(test_session) end)
-      |> Double.stub(:revoke_token, fn _token -> Result.ok(:ok) end)
-      |> Double.stub(:revoke_all_user_tokens, fn _user_id -> Result.ok(:ok) end)
-      |> Double.stub(:get_user_sessions, fn _user_id -> Result.ok([test_session]) end)
-      |> Double.stub(:cleanup_expired_tokens, fn -> Result.ok(0) end)
+      end,
+      validate_token: fn _token -> Result.ok(test_session) end,
+      revoke_token: fn _token -> Result.ok(:ok) end,
+      revoke_all_user_tokens: fn _user_id -> Result.ok(:ok) end,
+      get_user_sessions: fn _user_id -> Result.ok([test_session]) end,
+      cleanup_expired_tokens: fn -> Result.ok(0) end
+    }
 
-    apply_overrides(double, overrides)
-  end
+    impl = Map.merge(defaults, Map.new(overrides))
 
-  defp apply_overrides(double, overrides) do
-    Enum.reduce(overrides, double, fn {function, impl}, acc ->
-      Double.stub(acc, function, impl)
-    end)
+    SessionRepository
+    |> stub(:create_token, impl.create_token)
+    |> stub(:validate_token, impl.validate_token)
+    |> stub(:revoke_token, impl.revoke_token)
+    |> stub(:revoke_all_user_tokens, impl.revoke_all_user_tokens)
+    |> stub(:get_user_sessions, impl.get_user_sessions)
+    |> stub(:cleanup_expired_tokens, impl.cleanup_expired_tokens)
   end
 
   def transaction_fn() do
