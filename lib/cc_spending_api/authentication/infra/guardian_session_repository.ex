@@ -89,8 +89,17 @@ defmodule CcSpendingApi.Authentication.Infra.GuardianSessionRepository do
     %{session | jti: claims["jti"], expires_at: DateTime.from_unix!(claims["exp"])}
   end
 
-  defp build_session_from_claims(session, claims) do
-    %{session | jti: claims["jti"], expires_at: DateTime.from_unix(claims["exp"])}
+  defp build_session_from_claims(claims, user) do
+    Session.new(%{
+      user_id: user.id,
+      jti: claims["jti"],
+      exp: claims["exp"],
+      typ: claims["typ"],
+      access: claims["access"],
+      sub: claims["sub"]
+    })
+
+    # {:ok, Session.new(session)}
   end
 
   # defp to_session(token) when is_struct(token, Guardian.DB.Token) do

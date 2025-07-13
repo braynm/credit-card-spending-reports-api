@@ -29,7 +29,6 @@ defmodule CcSpendingApi.Test.Doubles do
 
   def session_repository_double(overrides \\ []) do
     test_session = %Session{
-      id: "test-session-id",
       user_id: "test-user-id",
       jti: "test-jti",
       aud: "web",
@@ -39,7 +38,7 @@ defmodule CcSpendingApi.Test.Doubles do
 
     defaults = %{
       create_token: fn session ->
-        Result.ok({%{session | id: "test-session-id"}, "test-token"})
+        Result.ok({%{session | jti: "test-jti"}, "test-token"})
       end,
       validate_token: fn _token -> Result.ok(test_session) end,
       revoke_token: fn _token -> Result.ok(:ok) end,

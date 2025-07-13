@@ -13,4 +13,3 @@ defmodule CcSpendingApi.Repo.Migrations.User do
     create unique_index(:user, :email)
   end
 end
-

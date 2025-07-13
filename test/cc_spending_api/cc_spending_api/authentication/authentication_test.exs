@@ -22,7 +22,7 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
       assert {:ok,
               %{
                 user: %User{email: %Email{value: "test@example.com"}},
-                session: %Session{id: "test-session-id", aud: "web"},
+                session: %Session{jti: "test-jti", aud: "web"},
                 token: "test-token"
               }} = Authentication.register("test@example.com", "password123", "web", deps)
     end
@@ -71,7 +71,6 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
                  session:
                    {%CcSpendingApi.Authentication.Domain.Entities.Session{
                       aud: "web",
-                      id: "test-session-id",
                       user_id: "test-id",
                       updated_at: nil
                     }, "test-token"},
@@ -103,7 +102,6 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
         Doubles.session_repository_double(
           validate_token: fn token ->
             Result.ok(%CcSpendingApi.Authentication.Domain.Entities.Session{
-              id: "test-session-id",
               user_id: "test-user-id",
               jti: "test-jti",
               aud: "web"
@@ -131,7 +129,6 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
       assert {:ok,
               %{
                 session: %CcSpendingApi.Authentication.Domain.Entities.Session{
-                  id: "test-session-id",
                   user_id: "test-user-id",
                   jti: "test-jti",
                   aud: "web",

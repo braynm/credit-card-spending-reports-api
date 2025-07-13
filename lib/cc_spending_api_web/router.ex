@@ -10,6 +10,20 @@ defmodule CcSpendingApiWeb.Router do
     plug :put_secure_browser_headers
   end
 
+  pipeline :guardian_auth do
+    plug Guardian.Plug.Pipeline,
+      module: CcSpendingApiWeb.Guardian,
+      error_handler: CcSpendingApiWeb.AuthErrorHandler
+
+    plug Guardian.Plug.VerifyHeader, realm: "Bearer"
+    plug Guardian.Plug.EnsureAuthenticated
+    plug Guardian.Plug.LoadResource
+  end
+
+  pipeline :guardian_validate_session do
+    plug CcSpendingApiWeb.Plugs.ValidateGuardianSession
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -20,16 +34,25 @@ defmodule CcSpendingApiWeb.Router do
     get "/", PageController, :home
   end
 
-  scope "/", CcSpendingApiWeb do
+  # Other scopes may use custom stacks.
+  scope "/api", CcSpendingApiWeb do
     pipe_through :api
 
-    get "/", AuthController, :home
+    post "/auth/register", AuthController, :register
+    post "/auth/login", AuthController, :login
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", CcSpendingApiWeb do
-  #   pipe_through :api
-  # end
+  scope "/api", CcSpendingApiWeb do
+    pipe_through [:api, :guardian_auth]
+
+    get "/auth/me", AuthController, :me
+  end
+
+  scope "/api", CcSpendingApiWeb do
+    pipe_through [:api, :guardian_auth, :guardian_validate_session]
+
+    get "/auth/test", AuthController, :test
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:cc_spending_api, :dev_routes) do

@@ -2,13 +2,13 @@ defmodule CcSpendingApi.Authentication.Domain.Entities.Session do
   alias CcSpendingApi.Shared.{Result, Errors}
 
   @type t :: %__MODULE__{
-          id: String.t() | nil,
+          # id: String.t() | nil,
           user_id: String.t(),
           jti: String.t(),
           aud: String.t()
         }
 
-  defstruct [:id, :user_id, :jti, :aud, :expires_at, :created_at, :updated_at]
+  defstruct [:user_id, :jti, :aud, :expires_at, :created_at, :updated_at]
 
   # 7 days
   @default_expiry_hours 24 * 7
@@ -20,7 +20,7 @@ defmodule CcSpendingApi.Authentication.Domain.Entities.Session do
     aud = attrs[:aud] || @default_audience
 
     session = %__MODULE__{
-      id: attrs[:id],
+      # id: attrs[:id],
       user_id: attrs[:user_id],
       jti: jti,
       aud: aud,
