@@ -1,13 +1,14 @@
 defmodule CcSpendingApi.Test.Doubles do
   alias CcSpendingApi.Authentication.Domain.Repositories.{UserRepository, SessionRepository}
   alias CcSpendingApi.Authentication.Domain.Entities.{User, Session}
+  alias CcSpendingApi.Authentication.Domain.ValueObjects.{Password}
   alias CcSpendingApi.Shared.{Result, Errors}
   import Double
 
   def user_repository_double(overrides \\ []) do
     defaults = %{
       save: fn user -> Result.ok(%{user | id: "test-user-id"}) end,
-      get_by_email: fn _email ->
+      get_by_email: fn email ->
         Result.error(%Errors.NotFoundError{message: "User not found", resource: :user})
       end,
       get_by_id: fn _id ->

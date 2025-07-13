@@ -5,7 +5,7 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
   alias CcSpendingApi.Authentication
   alias CcSpendingApi.Test.Doubles
 
-  alias CcSpendingApi.Authentication.Domain.ValueObjects.Email
+  alias CcSpendingApi.Authentication.Domain.ValueObjects.{Email, Password}
   alias CcSpendingApi.Authentication.Domain.Entities.{User, Session}
   alias CcSpendingApi.Shared.{Result, Errors}
 
@@ -54,5 +54,61 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
                value: "test@example.com"
              }) == Authentication.register("test@example.com", "password123", "web", deps)
     end
+  end
+
+  @tag :authentication
+  describe "Authentication.login/4" do
+    test "successfully logins user" do
+      user_repo =
+        Doubles.user_repository_double(
+          get_by_email: fn email ->
+            Result.ok(%User{
+              id: "test-id",
+              email: email,
+              password_hash: hash_pw("password123")
+            })
+          end
+        )
+
+      deps = %{
+        user_repository: user_repo,
+        session_repository: Doubles.session_repository_double(),
+        transaction_fn: Doubles.transaction_fn()
+      }
+
+      assert {
+               :ok,
+               %{
+                 session:
+                   {%CcSpendingApi.Authentication.Domain.Entities.Session{
+                      aud: "web",
+                      id: "test-session-id",
+                      user_id: "test-id",
+                      updated_at: nil
+                    }, "test-token"},
+                 user: %CcSpendingApi.Authentication.Domain.Entities.User{
+                   email: "test@example.com",
+                   id: "test-id"
+                 }
+               }
+             } = Authentication.login("test@example.com", "password123", "web", deps)
+    end
+
+    @tag :authentication
+    test "fail logins user" do
+      deps = %{
+        user_repository: Doubles.user_repository_double(),
+        session_repository: Doubles.session_repository_double(),
+        transaction_fn: Doubles.transaction_fn()
+      }
+
+      assert {:error, %Errors.AuthenticationError{message: "Invalid credentials"}} ==
+               Authentication.login("test@example.com", "password123", "web", deps)
+    end
+  end
+
+  defp hash_pw(password) when is_binary(password) do
+    {:ok, pw} = Password.new(password)
+    hash = Password.hash(pw)
   end
 end

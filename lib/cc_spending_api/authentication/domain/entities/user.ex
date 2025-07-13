@@ -33,7 +33,7 @@ defmodule CcSpendingApi.Authentication.Domain.Entities.User do
     end
   end
 
-  def verify_password(%__MODULE__{password_hash: hash}, password) do
+  def verify_password(hash, password) when is_binary(hash) do
     Password.verify(password, hash)
   end
 
