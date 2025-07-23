@@ -62,7 +62,8 @@ defmodule CcSpendingApi.MixProject do
       {:guardian, "~> 2.3"},
       {:guardian_db, "~> 3.0"},
       {:bcrypt_elixir, "~> 3.0"},
-      {:double, "~> 0.8.2", only: :test}
+      {:double, "~> 0.8.2", only: :test},
+      {:cors_plug, "~> 3.0"}
     ]
   end
 
