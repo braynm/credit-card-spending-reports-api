@@ -98,9 +98,15 @@ defmodule CcSpendingApi.Authentication do
   def login(email, password, audience \\ "web", deps \\ nil) do
     deps = deps || default_deps()
 
-    %{email: email, password: password}
-    |> LoginUser.new()
-    |> LoginUserHandler.handle(deps)
+    with {:ok, command} <- LoginUser.new(%{email: email, password: password}) do
+      LoginUserHandler.handle(command, deps)
+    else
+      {:error, %Ecto.Changeset{} = error} ->
+        {:error, error}
+
+      error ->
+        IO.inspect(error)
+    end
   end
 
   @doc """

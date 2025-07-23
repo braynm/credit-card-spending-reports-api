@@ -33,10 +33,13 @@ defmodule CcSpendingApiWeb.AuthController do
     end
   end
 
-  def login(conn, %{"email" => email, "password" => password} = params) do
+  def login(conn, params) do
     audience = Map.get(params, "audience", "web")
 
-    case Authentication.login(email, password, audience) |> IO.inspect() do
+    email = params["email"] || ""
+    password = params["password"] || ""
+
+    case Authentication.login(email, password, audience) do
       {:ok, %{user: user, session: {_, token}}} ->
         user =
           user
@@ -54,9 +57,20 @@ defmodule CcSpendingApiWeb.AuthController do
         |> put_status(400)
         |> json(%{
           error:
-            error
-            |> Map.from_struct()
-            |> Map.drop([:__exception__])
+            cond do
+              # we specify error to email only since this is the application for login
+              is_struct(error) ->
+                %{
+                  email:
+                    error
+                    |> Map.from_struct()
+                    |> Map.drop([:__exception__])
+                }
+
+              # Contains the whole object of validation of all errors from all fields
+              true ->
+                error
+            end
         })
     end
   end
