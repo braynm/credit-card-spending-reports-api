@@ -46,7 +46,6 @@ defmodule CcSpendingApiWeb.AuthController do
           |> Map.from_struct()
           |> IO.inspect()
           |> Map.update(:email, nil, & &1.value)
-          |> Map.drop([:password_hash])
 
         conn
         |> put_status(:created)
@@ -65,6 +64,7 @@ defmodule CcSpendingApiWeb.AuthController do
                     error
                     |> Map.from_struct()
                     |> Map.drop([:__exception__])
+                    |> Map.fetch!(:message)
                 }
 
               # Contains the whole object of validation of all errors from all fields

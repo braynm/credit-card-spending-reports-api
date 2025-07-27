@@ -11,7 +11,10 @@ defmodule CcSpendingApi.Authentication.Application.Handlers.LoginUserHandler do
   def handle(%LoginUser{} = command, deps) do
     with {:ok, user} <- AuthenticationService.authenticate(command.email, command.password, deps),
          {:ok, session} <- AuthenticationService.create_session(user, deps) do
-      Result.ok(%{user: user, session: session})
+      Result.ok(%{
+        user: Map.drop(user, [:password_hash]),
+        session: session
+      })
     else
       error -> error
     end
