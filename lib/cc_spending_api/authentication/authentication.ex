@@ -93,6 +93,9 @@ defmodule CcSpendingApi.Authentication do
       
       iex> Authentication.login("user@example.com", "wrong_password")
       {:error, %AuthenticationError{message: "Invalid credentials"}}
+
+      iex> Authentication.login("", "wrong_password")
+      {:error, %Ecto.Changeset{invalid? true, ...}}
   """
   @spec login(String.t(), String.t(), audience(), map()) :: auth_result()
   def login(email, password, audience \\ "web", deps \\ nil) do
