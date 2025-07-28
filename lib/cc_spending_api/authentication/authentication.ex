@@ -8,6 +8,8 @@ defmodule CcSpendingApi.Authentication do
   """
 
   alias CcSpendingApi.Authentication.Domain.Entities.{User, Session}
+  alias CcSpendingApi.Authentication.Domain.ValueObjects.AuthenticatedUser
+  alias CcSpendingApi.Authentication.Domain.ValueObjects.RegisteredUser
   alias CcSpendingApi.Shared.Result
 
   alias CcSpendingApi.Authentication.Application.Commands.{
@@ -56,7 +58,7 @@ defmodule CcSpendingApi.Authentication do
 
   ## Examples
       iex> Authentication.register("user@example.com", "password123")
-        {:ok, %{user: %User{}, session: %Session{}, token: "jwt_token..."}}
+        {:ok, %{user: %RegisteredUser{}, session: %Session{}, token: "jwt_token..."}}
       
       iex> Authentication.register("user@example.com", "password123", "mobile")
       {:ok, %{user: %User{}, session: %Session{aud: "mobile"}, token: "jwt_token..."}}
@@ -89,7 +91,7 @@ defmodule CcSpendingApi.Authentication do
 
   ## Examples
       iex> Authentication.login("user@example.com", "password123")
-      {:ok, %{user: %User{}, session: %Session{}, token: "jwt_token..."}}
+      {:ok, %{user: %AuthenticatedUser{}, session: %Session{}, token: "jwt_token..."}}
       
       iex> Authentication.login("user@example.com", "wrong_password")
       {:error, %AuthenticationError{message: "Invalid credentials"}}

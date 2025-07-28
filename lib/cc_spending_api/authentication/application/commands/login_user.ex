@@ -6,13 +6,6 @@ defmodule CcSpendingApi.Authentication.Application.Commands.LoginUser do
 
   defstruct [:email, :password]
 
-  # def new(attrs) do
-  #   %__MODULE__{
-  #     email: attrs[:email],
-  #     password: attrs[:password]
-  #   }
-  # end
-
   defmodule Validator do
     use Ecto.Schema
     import Ecto.Changeset

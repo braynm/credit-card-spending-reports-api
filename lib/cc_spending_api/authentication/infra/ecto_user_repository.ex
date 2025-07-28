@@ -43,11 +43,9 @@ defmodule CcSpendingApi.Authentication.Infra.EctoUserRepository do
   end
 
   defp to_domain(%UserSchema{} = schema) do
-    {:ok, email} = Email.new(schema.email)
-
     %User{
       id: schema.id,
-      email: email,
+      email: schema.email,
       password_hash: schema.password_hash,
       created_at: schema.inserted_at,
       updated_at: schema.updated_at
