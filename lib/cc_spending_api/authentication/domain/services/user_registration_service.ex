@@ -13,9 +13,7 @@ defmodule CcSpendingApi.Authentication.Domain.Services.UserRegistrationService d
   defp check_email_availability(email, deps) do
     if deps.user_repository.email_exists?(email) do
       Result.error(%Errors.ValidationError{
-        message: "Email already exists",
-        field: :email,
-        value: email
+        message: "Email already exists"
       })
     else
       :ok

@@ -31,9 +31,7 @@ defmodule CcSpendingApi.Authentication.Application.Handlers.RegisterUserHandler 
         else
           true ->
             Result.error(%Errors.ValidationError{
-              message: "Email already exists",
-              field: :email,
-              value: command.email
+              message: "Email already exists"
             })
 
           error ->

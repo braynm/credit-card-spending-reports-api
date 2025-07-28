@@ -54,6 +54,6 @@ defmodule CcSpendingApi.Authentication.Infra.EctoUserRepository do
 
   defp changeset_to_error(%Ecto.Changeset{errors: errors}) do
     {field, {message, _}} = List.first(errors)
-    %Errors.ValidationError{message: message, field: field, value: nil}
+    %Errors.ValidationError{message: message}
   end
 end

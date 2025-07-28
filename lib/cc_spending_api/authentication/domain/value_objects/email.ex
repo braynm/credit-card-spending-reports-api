@@ -17,18 +17,14 @@ defmodule CcSpendingApi.Authentication.Domain.ValueObjects.Email do
       Result.ok(%__MODULE__{value: email})
     else
       Result.error(%Errors.ValidationError{
-        message: "Invalid email format",
-        field: :email,
-        value: email
+        message: "Invalid email format"
       })
     end
   end
 
   def new(_) do
     Result.error(%Errors.ValidationError{
-      message: "Email must be a string",
-      field: :email,
-      value: nil
+      message: "Email must be a string"
     })
   end
 

@@ -23,9 +23,15 @@ defmodule CcSpendingApiWeb.AuthController do
         |> put_status(400)
         |> json(%{
           error:
-            error
-            |> Map.from_struct()
-            |> Map.drop([:__exception__])
+            cond do
+              is_struct(error) ->
+                error
+                |> Map.from_struct()
+                |> Map.drop([:__exception__])
+
+              true ->
+                error
+            end
         })
     end
   end

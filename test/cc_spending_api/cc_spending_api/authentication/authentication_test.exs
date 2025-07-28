@@ -40,9 +40,7 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
       }
 
       assert Result.error(%Errors.ValidationError{
-               message: "Email already exists",
-               field: :email,
-               value: "test@example.com"
+               message: "Email already exists"
              }) == Authentication.register("test@example.com", "password123", "web", deps)
     end
   end

@@ -1,4 +1,7 @@
 defmodule CcSpendingApi.Authentication.Application.Commands.RegisterUser do
+  alias CcSpendingApi.Shared.Result
+  alias CcSpendingApi.Utils.ValidatorFormatter
+
   @type t :: %__MODULE__{
           email: String.t(),
           password: String.t()
@@ -28,10 +31,20 @@ defmodule CcSpendingApi.Authentication.Application.Commands.RegisterUser do
     end
   end
 
-  def new(attrs) do
-    %__MODULE__{
-      email: attrs[:email],
-      password: attrs[:password]
-    }
+  def new(params) do
+    case Validator.changeset(params) do
+      %Ecto.Changeset{valid?: true} = changeset ->
+        validated_data = Ecto.Changeset.apply_changes(changeset)
+
+        command = %__MODULE__{
+          email: validated_data.email,
+          password: validated_data.password
+        }
+
+        Result.ok(command)
+
+      %Ecto.Changeset{valid?: false} = changeset ->
+        Result.error(ValidatorFormatter.first_errors_by_field(changeset))
+    end
   end
 end
