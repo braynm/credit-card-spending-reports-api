@@ -132,7 +132,7 @@ defmodule CcSpendingApi.Authentication do
 
   ## Examples
       iex> Authentication.validate_session("valid_jwt_token")
-      {:ok, %{user: %User{}, session: %Session{}}}
+      {:ok, %{user: %RegisteredUser{}, session: %Session{}}}
       
       iex> Authentication.validate_session("invalid_token")
       {:error, %AuthenticationError{message: "Invalid session"}}
