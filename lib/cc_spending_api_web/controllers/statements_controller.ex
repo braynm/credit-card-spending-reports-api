@@ -1,12 +1,10 @@
 defmodule CcSpendingApiWeb.StatementsController do
   use CcSpendingApiWeb, :controller
-  alias CcSpendingApi.Statements.Application.Services.FileProcessor
 
-  alias CcSpendingApi.Authentication
-  alias CcSpendingApiWeb.Guardian
+  alias CcSpendingApi.Statements
 
   def upload(conn, params) do
-    case FileProcessor.read_and_validate(params["file"]) do
+    case Statements.upload_and_save_transactions_from_attachment(params) do
       {:error, {:invalid_file_type, _}} ->
         json(conn, %{
           error: "Please only upload .pdf files"

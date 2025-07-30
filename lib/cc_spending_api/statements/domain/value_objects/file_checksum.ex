@@ -4,6 +4,7 @@ defmodule CcSpendingApi.Statements.Domain.ValueObjects.FileChecksum do
   """
 
   defstruct [:value]
+  alias CcSpendingApi.Shared.Result
 
   @type t :: %__MODULE__{
           value: String.t()
@@ -22,7 +23,7 @@ defmodule CcSpendingApi.Statements.Domain.ValueObjects.FileChecksum do
       |> :crypto.hash(file_content)
       |> Base.encode32(case: :lower)
 
-    %__MODULE__{value: hash_value}
+    Result.ok(%__MODULE__{value: hash_value})
   end
 
   def to_string(%__MODULE__{value: value}), do: value
