@@ -10,6 +10,11 @@ defmodule CcSpendingApiWeb.StatementsController do
           error: "Please only upload .pdf files"
         })
 
+      {:error, {:duplicate_statement, _}} ->
+        json(conn, %{
+          error: "Transactions already exists"
+        })
+
       {:error, {:max_size, _}} ->
         json(conn, %{
           error: "File is too large"
