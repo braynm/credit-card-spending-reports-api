@@ -20,6 +20,11 @@ defmodule CcSpendingApiWeb.StatementsController do
           error: "File is too large"
         })
 
+      {:error, ~c"Incorrect password"} ->
+        json(conn, %{
+          error: "Incorrect statement .pdf password"
+        })
+
       {:ok, _} ->
         json(conn, %{
           success: true
