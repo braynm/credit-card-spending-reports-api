@@ -3,7 +3,8 @@ defmodule CcSpendingApi.Statements.Infra.EctoCardStatementRepository do
 
   import Ecto.Query
   alias CcSpendingApi.Repo
-  alias CcSpendingApi.Shared.Result
+  alias CcSpendingApi.Shared.{Result, Errors}
+  alias CcSpendingApi.Utils.ValidatorFormatter
   alias CcSpendingApi.Statements.Domain.Entities.CardStatement
   alias CcSpendingApi.Statements.Infra.Schemas.CardStatementSchema
 
@@ -31,7 +32,11 @@ defmodule CcSpendingApi.Statements.Infra.EctoCardStatementRepository do
     |> case do
       # {:ok, schema} -> Result.ok(to_domain(schema))
       {:ok, schema} -> Result.ok(schema)
-      {:error, changeset} = error -> error
+      {:error, changeset} -> Result.error(changeset_to_error(changeset))
     end
+  end
+
+  defp changeset_to_error(%Ecto.Changeset{valid?: false} = changeset) do
+    ValidatorFormatter.first_errors_by_field(changeset)
   end
 end

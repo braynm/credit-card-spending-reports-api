@@ -4,6 +4,7 @@ defmodule CcSpendingApiWeb.StatementsController do
   alias CcSpendingApi.Statements
 
   def upload(conn, params) do
+    # TODO: Standardize structure of errors
     case Statements.upload_and_save_transactions_from_attachment(params) do
       {:ok, data} ->
         json(conn, %{success: true, data: data})
@@ -19,6 +20,9 @@ defmodule CcSpendingApiWeb.StatementsController do
 
       {:error, ~c"Incorrect password"} ->
         json(conn, %{error: "Incorrect statement .pdf password"})
+
+      {:error, error} ->
+        json(conn, %{error: error})
     end
   end
 end
