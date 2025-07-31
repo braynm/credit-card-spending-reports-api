@@ -40,11 +40,13 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   - {:error, :malformed_extracted_text} if input is not a list
   """
   def parse(extracted_texts) when is_list(extracted_texts) do
-    extracted_texts
-    # |> charlist_to_sigil()
+    txns = extracted_texts
+    |> charlist_to_sigil()
     |> find_transaction_page()
     |> find_transaction_list()
     |> normalize_row()
+
+    {:ok, txns}
   end
 
   def parse(_), do: {:error, :malformed_extracted_text}

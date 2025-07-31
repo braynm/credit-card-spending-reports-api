@@ -5,8 +5,8 @@ defmodule CcSpendingApiWeb.StatementsController do
 
   def upload(conn, params) do
     case Statements.upload_and_save_transactions_from_attachment(params) do
-      {:ok, _} ->
-        json(conn, %{success: true})
+      {:ok, data} ->
+        json(conn, %{success: true, data: data})
 
       {:error, {:invalid_file_type, _}} ->
         json(conn, %{error: "Please only upload .pdf files"})
