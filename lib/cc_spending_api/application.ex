@@ -18,6 +18,7 @@ defmodule CcSpendingApi.Application do
       # TODO: DELETE FILE and use Guardian.DB default sweeper
       # {Guardian.DB.Token.Sweeper, []}
       {Guardian.DB.Sweeper, []},
+      {CcSpendingApi.Statements.PdfExtractor, []},
       # CcSpendingApi.Authentication.Infra.GuardianCleanupWorker,
       CcSpendingApiWeb.Endpoint
     ]
