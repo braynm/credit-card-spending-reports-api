@@ -4,20 +4,21 @@ defmodule CcSpendingApi.Repo.Migrations.UserTransaction do
   def change do
     create table(:card_statement, primary_key: true) do
       add :user_id, references(:user, on_delete: :delete_all)
+      add :filename, :string
       add :file_checksum, :string
 
-      timestamps()
+      timestamps(default: fragment("now()"), type: :utc_datetime)
     end
 
     create table(:user_transaction, primary_key: true) do
       add :user_id, references(:user, on_delete: :delete_all)
       add :statement_id, references(:card_statement, on_delete: :delete_all)
-      add :sale_date, :string
-      add :posted_date, :string
+      add :sale_date, :utc_datetime
+      add :posted_date, :utc_datetime
       add :encrypted_details, :string
       add :encrypted_amount, :string
 
-      timestamps()
+      timestamps(default: fragment("now()"), type: :utc_datetime)
     end
 
     create index(:user_transaction, [:user_id, :statement_id])
