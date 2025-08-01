@@ -2,9 +2,9 @@ defmodule CcSpendingApi.Statements do
   alias CcSpendingApi.Statements.PdfExtractor
   alias CcSpendingApi.Statements.Infra.Parsers.RcbcParser
   alias CcSpendingApi.Statements.Domain.ValueObjects.FileChecksum
-  alias CcSpendingApi.Statements.Application.Services.FileProcessor
-  alias CcSpendingApi.Statements.Application.Services.DuplicateChecker
-  alias CcSpendingApi.Statements.Application.Services.SaveStatementService
+  alias CcSpendingApi.Statements.Domain.Services.FileProcessor
+  alias CcSpendingApi.Statements.Domain.Services.SaveStatementService
+  alias CcSpendingApi.Statements.Domain.Services.DuplicateChecker
 
   def upload_and_save_transactions_from_attachment(params) do
     with %Plug.Upload{path: tmp_path, filename: filename} <- params["file"],

@@ -1,4 +1,4 @@
-defmodule CcSpendingApi.Statements.Application.Services.DuplicateChecker do
+defmodule CcSpendingApi.Statements.Domain.Services.DuplicateChecker do
   @moduledoc """
   Service for checking duplicate statement uploads
   """

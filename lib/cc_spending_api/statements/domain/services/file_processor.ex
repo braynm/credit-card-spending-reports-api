@@ -1,4 +1,4 @@
-defmodule CcSpendingApi.Statements.Application.Services.FileProcessor do
+defmodule CcSpendingApi.Statements.Domain.Services.FileProcessor do
   alias CcSpendingApi.Shared.Result
 
   @max_file_size Application.compile_env(

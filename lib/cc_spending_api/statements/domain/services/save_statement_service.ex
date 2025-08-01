@@ -1,4 +1,4 @@
-defmodule CcSpendingApi.Statements.Application.Services.SaveStatementService do
+defmodule CcSpendingApi.Statements.Domain.Services.SaveStatementService do
   alias CcSpendingApi.Shared.{Result, Errors}
   alias CcSpendingApi.Statements.Domain.Entities.CardStatement
   alias CcSpendingApi.Statements.Infra.EctoTransactionRepository
