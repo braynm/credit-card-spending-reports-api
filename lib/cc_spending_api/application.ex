@@ -20,7 +20,8 @@ defmodule CcSpendingApi.Application do
       {Guardian.DB.Sweeper, []},
       {CcSpendingApi.Statements.PdfExtractor, []},
       # CcSpendingApi.Authentication.Infra.GuardianCleanupWorker,
-      CcSpendingApiWeb.Endpoint
+      CcSpendingApiWeb.Endpoint,
+      CcSpendingApi.Vault
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

@@ -1,6 +1,7 @@
 defmodule CcSpendingApi.Statements.Infra.Schemas.TransactionSchema do
   use Ecto.Schema
   import Ecto.Changeset
+  alias CcSpendingApi.EncryptedTypes
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -9,7 +10,8 @@ defmodule CcSpendingApi.Statements.Infra.Schemas.TransactionSchema do
     field :statement_id, Ecto.UUID
     field :sale_date, :utc_datetime
     field :posted_date, :utc_datetime
-    field :encrypted_details, :string
+    field :encrypted_details, CcSpendingApi.EncryptedTypes.Binary
+    # field :encrypted_amount, EncryptedTypes.Money
     field :encrypted_amount, :string
 
     # TODO: add covered date? e.g. 2024-01-01 to 2024-02-01

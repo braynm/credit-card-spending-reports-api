@@ -139,6 +139,7 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
       [sale_date, post_date | rest] = txn
       {desc, [amt]} = Enum.split(rest, -1)
 
+      # TODO: convert to txn value object
       %{
         sale_date: to_iso8601(sale_date),
         posted_date: to_iso8601(post_date),
