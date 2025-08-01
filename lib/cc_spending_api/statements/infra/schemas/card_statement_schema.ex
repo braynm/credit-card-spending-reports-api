@@ -2,6 +2,8 @@ defmodule CcSpendingApi.Statements.Infra.Schemas.CardStatementSchema do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
   schema "card_statement" do
     field :user_id, :integer
     field :filename, :string

@@ -2,7 +2,10 @@ defmodule CcSpendingApi.Repo.Migrations.UserTransaction do
   use Ecto.Migration
 
   def change do
-    create table(:card_statement, primary_key: true) do
+    execute("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
+
+    create table(:card_statement, primary_key: false) do
+      add :id, :uuid, primary_key: true
       add :user_id, references(:user, on_delete: :delete_all)
       add :filename, :string
       add :file_checksum, :string
@@ -10,9 +13,10 @@ defmodule CcSpendingApi.Repo.Migrations.UserTransaction do
       timestamps(default: fragment("now()"), type: :utc_datetime)
     end
 
-    create table(:user_transaction, primary_key: true) do
+    create table(:user_transaction, primary_key: false) do
+      add :id, :uuid, primary_key: true
       add :user_id, references(:user, on_delete: :delete_all)
-      add :statement_id, references(:card_statement, on_delete: :delete_all)
+      add :statement_id, references(:card_statement, type: :uuid, on_delete: :delete_all)
       add :sale_date, :utc_datetime
       add :posted_date, :utc_datetime
       add :encrypted_details, :string

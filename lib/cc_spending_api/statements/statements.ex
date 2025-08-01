@@ -10,7 +10,7 @@ defmodule CcSpendingApi.Statements do
     with %Plug.Upload{path: tmp_path, filename: filename} <- params["file"],
          {:ok, binary_file} <- FileProcessor.read_and_validate(params["file"]),
          {:ok, checksum} <- FileChecksum.new(binary_file),
-         :ok <- DuplicateChecker.check_duplicate(11, checksum),
+         :ok <- DuplicateChecker.check_duplicate(params["user_id"], checksum),
          {:ok, extracted_texts} <-
            PdfExtractor.extract_texts(tmp_path, params["pdf_pw"]),
          # {:ok, txns} <- RcbcParser.parse(extracted_texts) do

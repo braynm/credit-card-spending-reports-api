@@ -3,7 +3,8 @@ defmodule CcSpendingApi.Repo.Migrations.TransactionMeta do
 
   def change do
     create table(:transaction_meta, primary_key: false) do
-      add :transaction_id, references(:user_transaction, on_delete: :delete_all)
+      add :id, :uuid, primary_key: true
+      add :transaction_id, references(:user_transaction, type: :uuid, on_delete: :delete_all)
       add :details, :string
       add :amount, :bigint
 
