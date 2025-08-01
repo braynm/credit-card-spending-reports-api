@@ -18,6 +18,7 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
     use Ecto.Schema
     import Ecto.Changeset
 
+    @supported_banks ["rcbc"]
     @derive {Jason.Encoder, only: [:user_id, :bank, :pdf_pw, :file]}
 
     @max_file_size Application.compile_env(
@@ -43,6 +44,7 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
       %__MODULE__{}
       |> cast(params, [:file, :bank, :user_id, :pdf_pw])
       |> validate_required([:file, :bank, :user_id, :pdf_pw])
+      |> validate_bank()
       |> validate_file()
     end
 
@@ -59,6 +61,18 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
         :file,
         "File too large, max size: #{@max_file_size} file size: #{size}"
       )
+    end
+
+    defp validate_bank(%Ecto.Changeset{changes: changes} = changeset) do
+      if String.downcase(changes.bank) not in @supported_banks do
+        add_error(
+          changeset,
+          :bank,
+          "Unsupported bank. Please contact the admin to request bank support."
+        )
+      else
+        changeset
+      end
     end
 
     defp validate_file_size(changeset, _), do: changeset
