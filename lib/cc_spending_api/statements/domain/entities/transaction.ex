@@ -34,7 +34,9 @@ defmodule CcSpendingApi.Statements.Domain.Entities.Transaction do
       sale_date: to_date_string(params.sale_date),
       posted_date: to_date_string(params.posted_date),
       details: params.encrypted_details,
-      amount: params.encrypted_amount
+      amount: params.encrypted_amount,
+      inserted_at: params.inserted_at,
+      updated_at: params.updated_at
     })
   end
 

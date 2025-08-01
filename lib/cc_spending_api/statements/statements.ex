@@ -15,14 +15,14 @@ defmodule CcSpendingApi.Statements do
            PdfExtractor.extract_texts(tmp_path, params["pdf_pw"]),
          # {:ok, txns} <- RcbcParser.parse(extracted_texts) do
          {:ok, extracted_txns} <- txn_parse(params["bank"], extracted_texts),
-         {:ok, {_, saved_statement}} <-
+         {:ok, {_, saved_txns}} <-
            save_statement_and_transaction(
              extracted_txns,
              params["user_id"],
              filename,
              checksum
            ) do
-      {:ok, extracted_txns}
+      {:ok, saved_txns}
     end
   end
 
