@@ -14,15 +14,25 @@ defmodule CcSpendingApi.Statements do
          {:ok, extracted_texts} <-
            PdfExtractor.extract_texts(tmp_path, params["pdf_pw"]),
          # {:ok, txns} <- RcbcParser.parse(extracted_texts) do
-         {:ok, txns} <- txn_parse(params["bank"], extracted_texts),
-         {:ok, saved_statement} <-
-           SaveStatementService.save_statement_and_transaction(%{
-             "filename" => filename,
-             "file_checksum" => checksum,
-             "user_id" => params["user_id"]
-           }) do
-      {:ok, txns}
+         {:ok, extracted_txns} <- txn_parse(params["bank"], extracted_texts),
+         {:ok, {_, saved_statement}} <-
+           save_statement_and_transaction(
+             extracted_txns,
+             params["user_id"],
+             filename,
+             checksum
+           ) do
+      {:ok, extracted_txns}
     end
+  end
+
+  defp save_statement_and_transaction(txns, user_id, filename, checksum) do
+    SaveStatementService.save_statement_and_transaction(%{
+      "filename" => filename,
+      "file_checksum" => checksum,
+      "user_id" => user_id,
+      "txns" => txns
+    })
   end
 
   defp txn_parse(bank, extracted_texts) do

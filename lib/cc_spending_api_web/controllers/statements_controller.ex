@@ -7,7 +7,10 @@ defmodule CcSpendingApiWeb.StatementsController do
     # TODO: Standardize structure of errors
     case Statements.upload_and_save_transactions_from_attachment(params) do
       {:ok, data} ->
-        json(conn, %{success: true, data: data})
+        json(conn, %{
+          success: true,
+          data: Enum.map(data, &Map.from_struct(&1))
+        })
 
       {:error, {:invalid_file_type, _}} ->
         json(conn, %{error: "Please only upload .pdf files"})

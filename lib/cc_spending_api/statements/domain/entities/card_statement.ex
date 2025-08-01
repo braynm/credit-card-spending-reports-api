@@ -6,8 +6,7 @@ defmodule CcSpendingApi.Statements.Domain.Entities.CardStatement do
   alias CcSpendingApi.Shared.Result
 
   @type t :: %__MODULE__{
-          # id: String.t() | nil,
-          id: String.t(),
+          id: String.t() | nil,
           user_id: String.t(),
           file_checksum: String.t(),
           filename: String.t(),

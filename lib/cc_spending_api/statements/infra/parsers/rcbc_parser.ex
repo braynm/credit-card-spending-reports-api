@@ -40,11 +40,12 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   - {:error, :malformed_extracted_text} if input is not a list
   """
   def parse(extracted_texts) when is_list(extracted_texts) do
-    txns = extracted_texts
-    |> charlist_to_sigil()
-    |> find_transaction_page()
-    |> find_transaction_list()
-    |> normalize_row()
+    txns =
+      extracted_texts
+      |> charlist_to_sigil()
+      |> find_transaction_page()
+      |> find_transaction_list()
+      |> normalize_row()
 
     {:ok, txns}
   end
@@ -139,10 +140,10 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
       {desc, [amt]} = Enum.split(rest, -1)
 
       %{
-        sale_date: sale_date,
-        post_date: post_date,
-        desc: Enum.join(desc, " "),
-        amount: normalize_amt(amt)
+        sale_date: to_iso8601(sale_date),
+        posted_date: to_iso8601(post_date),
+        encrypted_details: Enum.join(desc, " "),
+        encrypted_amount: normalize_amt(amt)
       }
     end)
   end
@@ -176,5 +177,16 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
     else
       amt
     end
+  end
+
+  def to_iso8601(date_str) do
+    [mm, dd, yy] = String.split(date_str, "/")
+    full_year = "20" <> yy
+
+    {:ok, date} =
+      Date.new(String.to_integer(full_year), String.to_integer(mm), String.to_integer(dd))
+
+    {:ok, datetime} = DateTime.new(date, ~T[00:00:00], "Etc/UTC")
+    datetime
   end
 end

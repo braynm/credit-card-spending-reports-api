@@ -3,36 +3,44 @@ defmodule CcSpendingApi.Statements.Domain.Entities.Transaction do
   Card Statement domain entity
   """
 
+  alias CcSpendingApi.Shared.Result
+
   @type t :: %__MODULE__{
-          id: String.t(),
           user_id: String.t(),
           statement_id: String.t(),
-          sale_date: String.t(),
+          sale_date: DateTime.t(),
           posted_date: DateTime.t(),
-          description: DateTime.t(),
-          amount: DateTime.t(),
+          details: String.t(),
+          amount: String.t(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
         }
 
   defstruct [
-    :id,
     :user_id,
     :statement_id,
     :sale_date,
     :posted_date,
-    :description,
+    :details,
     :amount,
     :inserted_at,
     :updated_at
   ]
 
   def new(params) do
-    # Result.ok(%__MODULE__{
-    #   id: params["id"],
-    #   user_id: params["user_id"],
-    #   inserted_at: params["inserted_at"],
-    #   updated_at: params["inserted_at"]
-    # })
+    Result.ok(%__MODULE__{
+      user_id: params.user_id,
+      statement_id: params.statement_id,
+      sale_date: to_date_string(params.sale_date),
+      posted_date: to_date_string(params.posted_date),
+      details: params.encrypted_details,
+      amount: params.encrypted_amount
+    })
+  end
+
+  defp to_date_string(%DateTime{} = datetime) do
+    datetime
+    |> DateTime.to_date()
+    |> Date.to_string()
   end
 end
