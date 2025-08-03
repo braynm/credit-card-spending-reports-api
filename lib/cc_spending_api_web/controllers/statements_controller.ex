@@ -5,7 +5,7 @@ defmodule CcSpendingApiWeb.StatementsController do
 
   def upload(conn, params) do
     # TODO: Standardize structure of errors
-    case Statements.upload_and_save_transactions_from_attachment(params) do
+    case Statements.upload_and_save_transactions_from_attachment(params) |> IO.inspect() do
       {:ok, data} ->
         json(conn, %{
           success: true,

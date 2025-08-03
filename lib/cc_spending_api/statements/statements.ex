@@ -6,6 +6,9 @@ defmodule CcSpendingApi.Statements do
   alias CcSpendingApi.Statements.Domain.Services.SaveStatementService
   alias CcSpendingApi.Statements.Domain.Services.DuplicateChecker
   alias CcSpendingApi.Statements.Application.Commands.UploadStatementTransaction
+  alias CcSpendingApi.Statements.Application.Handlers.UploadStatementHandler
+  alias CcSpendingApi.Statements.Infra.EctoTransactionRepository
+  alias CcSpendingApi.Statements.Infra.EctoTransactionMetaRepository
 
   # def upload_and_save_transactions_from_attachment(params) do
   #   with %Plug.Upload{path: tmp_path, filename: filename} <- params["file"],
@@ -27,7 +30,9 @@ defmodule CcSpendingApi.Statements do
   #   end
   # end
 
-  def upload_and_save_transactions_from_attachment(params) do
+  def upload_and_save_transactions_from_attachment(params, deps \\ default_deps())
+
+  def upload_and_save_transactions_from_attachment(params, deps) do
     # with {:ok, command} <- UploadStatementTransaction.new(params) do
     #   UploadStatementHandler.handle(command, deps)
     # end
@@ -49,23 +54,34 @@ defmodule CcSpendingApi.Statements do
     #   {:ok, saved_txns}
     # end
 
-    with %Plug.Upload{path: tmp_path, filename: filename} <- params["file"],
-         {:ok, binary_file} <- FileProcessor.read_and_validate(params["file"]),
-         {:ok, checksum} <- FileChecksum.new(binary_file),
-         :ok <- DuplicateChecker.check_duplicate(params["user_id"], checksum),
-         {:ok, extracted_texts} <-
-           PdfExtractor.extract_texts(tmp_path, params["pdf_pw"]),
-         {:ok, extracted_txns} <- txn_parse(params["bank"], extracted_texts),
-         {:ok, {_, saved_txns}} <-
-           save_statement_and_transaction(
-             extracted_txns,
-             params["user_id"],
-             filename,
-             checksum
-           ) do
-      IO.inspect(saved_txns)
-      {:ok, saved_txns}
+    with {:ok, command} <- UploadStatementTransaction.new(params) do
+      UploadStatementHandler.handle(command, deps)
     end
+
+    # with %Plug.Upload{path: tmp_path, filename: filename} <- params["file"],
+    #      {:ok, binary_file} <- FileProcessor.read_and_validate(params["file"]),
+    #      {:ok, checksum} <- FileChecksum.new(binary_file),
+    #      :ok <- DuplicateChecker.check_duplicate(params["user_id"], checksum),
+    #      {:ok, extracted_texts} <-
+    #        PdfExtractor.extract_texts(tmp_path, params["pdf_pw"]),
+    #      {:ok, extracted_txns} <- txn_parse(params["bank"], extracted_texts),
+    #      {:ok, {_, saved_txns}} <-
+    #        save_statement_and_transaction(
+    #          extracted_txns,
+    #          params["user_id"],
+    #          filename,
+    #          checksum
+    #        ) do
+    #   IO.inspect(saved_txns)
+    #   {:ok, saved_txns}
+    # end
+  end
+
+  defp default_deps do
+    %{
+      txn_repository: EctoTransactionRepository,
+      txn_meta_repository: EctoTransactionMetaRepository
+    }
   end
 
   defp save_statement_and_transaction(txns, user_id, filename, checksum) do

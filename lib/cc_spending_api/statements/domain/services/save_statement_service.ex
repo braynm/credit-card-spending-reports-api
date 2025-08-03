@@ -36,7 +36,7 @@ defmodule CcSpendingApi.Statements.Domain.Services.SaveStatementService do
       Enum.map(
         txns,
         &Map.merge(&1, %{
-          user_id: String.to_integer(user_id),
+          user_id: user_id,
           statement_id: statement_id
         })
       )
