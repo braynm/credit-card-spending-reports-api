@@ -17,6 +17,7 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   """
 
   alias CcSpendingApi.Statements.Domain.ValueObjects.Amount
+  alias CcSpendingApi.Statements.Domain.Entities.Transaction
   @behaviour CcSpendingApi.Statements.Domain.BankParser
 
   # Markers used to identify the start and end of transaction data in RCBC statements
@@ -46,7 +47,7 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
       |> charlist_to_sigil()
       |> find_transaction_page()
       |> find_transaction_list()
-      |> normalize_row()
+      |> normalize_and_to_transaction()
 
     {:ok, txns}
   end
@@ -136,6 +137,21 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   - List of transaction maps with standardized structure
   """
   defp normalize_row(result) do
+    Enum.map(result, fn txn ->
+      [sale_date, post_date | rest] = txn
+      {desc, [amt]} = Enum.split(rest, -1)
+
+      # TODO: convert to txn value object
+      %{
+        sale_date: to_iso8601(sale_date),
+        posted_date: to_iso8601(post_date),
+        encrypted_details: Enum.join(desc, " "),
+        encrypted_amount: normalize_amt(amt)
+      }
+    end)
+  end
+
+  defp normalize_and_to_transaction(result) do
     Enum.map(result, fn txn ->
       [sale_date, post_date | rest] = txn
       {desc, [amt]} = Enum.split(rest, -1)

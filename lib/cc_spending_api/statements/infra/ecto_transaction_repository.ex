@@ -15,7 +15,13 @@ defmodule CcSpendingApi.Statements.Infra.EctoTransactionRepository do
   end
 
   defp to_domain(%TransactionSchema{} = schema) do
-    {:ok, txn} = Transaction.new(schema)
+    {:ok, txn} = Transaction.from_schema(schema)
     txn
+  end
+
+  defp to_domain(params) do
+    IO.inspect(params)
+    # {:ok, txn} = Transaction.from_schema(schema)
+    params
   end
 end

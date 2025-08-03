@@ -21,8 +21,8 @@ defmodule CcSpendingApi.Statements.Domain.Services.SaveStatementService do
 
     with {:ok, statement_entity} <- CardStatement.new(card_stmt),
          {:ok, inserted_stmt} <- save_statement(statement_entity),
-         {:ok, inserted_txns} <- create_batch(user_id, inserted_stmt.id, txns) do
-      # IO.inspect(inserted_txns)
+         {:ok, batch_txns} <- map_batch_txns(user_id, inserted_stmt.id, txns),
+         {:ok, inserted_txns} <- batch_insert_txns(batch_txns) do
       {:ok, inserted_txns}
     end
   end
@@ -31,18 +31,24 @@ defmodule CcSpendingApi.Statements.Domain.Services.SaveStatementService do
     EctoCardStatementRepository.save_statement(statement_entity)
   end
 
-  defp create_batch(user_id, statement_id, txns) do
+  defp map_batch_txns(user_id, statement_id, txns) do
     txn_items =
       Enum.map(
         txns,
-        &Map.merge(&1, %{user_id: String.to_integer(user_id), statement_id: statement_id})
+        &Map.merge(&1, %{
+          user_id: String.to_integer(user_id),
+          statement_id: statement_id
+        })
       )
 
+    {:ok, txn_items}
+  end
+
+  defp batch_insert_txns(txns) do
     with {:ok, inserted_txns} <-
-           EctoTransactionRepository.create_batch_transaction(txn_items) do
+           EctoTransactionRepository.create_batch_transaction(txns) do
       txn_metas = Enum.map(inserted_txns, &to_txn_metas_entity/1)
 
-      IO.inspect(txn_metas)
       # side effect for reports
       {:ok, _} = EctoTransactionMetaRepository.create_batch_transaction(txn_metas)
       {:ok, inserted_txns}

@@ -4,6 +4,8 @@ defmodule CcSpendingApi.Statements.Domain.Entities.Transaction do
   """
 
   alias CcSpendingApi.Shared.Result
+  alias CcSpendingApi.Statements.Domain.ValueObjects.Amount
+  alias CcSpendingApi.Statements.Infra.Schemas.TransactionSchema
 
   @type t :: %__MODULE__{
           id: String.t() | nil,
@@ -30,6 +32,33 @@ defmodule CcSpendingApi.Statements.Domain.Entities.Transaction do
   ]
 
   def new(params) do
+    Result.ok(%__MODULE__{
+      id: params.id,
+      user_id: params.user_id,
+      statement_id: params.statement_id,
+      sale_date: to_date_string(params.sale_date),
+      posted_date: to_date_string(params.posted_date),
+      details: params.encrypted_details,
+      amount: params.encrypted_amount,
+      inserted_at: params.inserted_at,
+      updated_at: params.updated_at
+    })
+  end
+
+  def from_raw_transaction(params) do
+    Result.ok(%__MODULE__{
+      user_id: params.user_id,
+      statement_id: params.statement_id,
+      sale_date: to_date_string(params.sale_date),
+      posted_date: to_date_string(params.posted_date),
+      details: params.encrypted_details,
+      amount: Amount.to_string(params.encrypted_amount),
+      inserted_at: params.inserted_at,
+      updated_at: params.updated_at
+    })
+  end
+
+  def from_schema(%TransactionSchema{} = params) do
     Result.ok(%__MODULE__{
       id: params.id,
       user_id: params.user_id,

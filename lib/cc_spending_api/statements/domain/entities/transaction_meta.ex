@@ -41,13 +41,13 @@ defmodule CcSpendingApi.Statements.Domain.Entities.TransactionMeta do
 
         true ->
           {:ok, %Amount{amount: amount}} = Amount.new(params.amount)
+
           amount
           |> Decimal.to_string(:normal)
           |> String.to_integer()
       end
 
-  Result.ok(
-    %__MODULE__{
+    Result.ok(%__MODULE__{
       transaction_id: params.id,
       details: params.details,
       amount: amount
