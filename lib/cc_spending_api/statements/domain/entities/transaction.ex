@@ -6,6 +6,7 @@ defmodule CcSpendingApi.Statements.Domain.Entities.Transaction do
   alias CcSpendingApi.Shared.Result
 
   @type t :: %__MODULE__{
+          id: String.t() | nil,
           user_id: String.t(),
           statement_id: String.t(),
           sale_date: DateTime.t(),
@@ -17,6 +18,7 @@ defmodule CcSpendingApi.Statements.Domain.Entities.Transaction do
         }
 
   defstruct [
+    :id,
     :user_id,
     :statement_id,
     :sale_date,
@@ -29,6 +31,7 @@ defmodule CcSpendingApi.Statements.Domain.Entities.Transaction do
 
   def new(params) do
     Result.ok(%__MODULE__{
+      id: params.id,
       user_id: params.user_id,
       statement_id: params.statement_id,
       sale_date: to_date_string(params.sale_date),

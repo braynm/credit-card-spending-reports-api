@@ -5,15 +5,56 @@ defmodule CcSpendingApi.Statements do
   alias CcSpendingApi.Statements.Domain.Services.FileProcessor
   alias CcSpendingApi.Statements.Domain.Services.SaveStatementService
   alias CcSpendingApi.Statements.Domain.Services.DuplicateChecker
+  alias CcSpendingApi.Statements.Application.Commands.UploadStatementTransaction
+
+  # def upload_and_save_transactions_from_attachment(params) do
+  #   with %Plug.Upload{path: tmp_path, filename: filename} <- params["file"],
+  #        {:ok, binary_file} <- FileProcessor.read_and_validate(params["file"]),
+  #        {:ok, checksum} <- FileChecksum.new(binary_file),
+  #        :ok <- DuplicateChecker.check_duplicate(params["user_id"], checksum),
+  #        {:ok, extracted_texts} <-
+  #          PdfExtractor.extract_texts(tmp_path, params["pdf_pw"]),
+  #        # {:ok, txns} <- RcbcParser.parse(extracted_texts) do
+  #        {:ok, extracted_txns} <- txn_parse(params["bank"], extracted_texts),
+  #        {:ok, {_, saved_txns}} <-
+  #          save_statement_and_transaction(
+  #            extracted_txns,
+  #            params["user_id"],
+  #            filename,
+  #            checksum
+  #          ) do
+  #     {:ok, saved_txns}
+  #   end
+  # end
 
   def upload_and_save_transactions_from_attachment(params) do
+    # with {:ok, command} <- UploadStatementTransaction.new(params) do
+    #   UploadStatementHandler.handle(command, deps)
+    # end
+
+    # with %Plug.Upload{path: tmp_path, filename: filename} <- params["file"],
+    #      {:ok, binary_file} <- FileProcessor.read_and_validate(params["file"]),
+    #      {:ok, checksum} <- FileChecksum.new(binary_file),
+    #      :ok <- DuplicateChecker.check_duplicate(params["user_id"], checksum),
+    #      {:ok, extracted_texts} <-
+    #        PdfExtractor.extract_texts(tmp_path, params["pdf_pw"]),
+    #      {:ok, extracted_txns} <- txn_parse(params["bank"], extracted_texts),
+    #      {:ok, {_, saved_txns}} <-
+    #        save_statement_and_transaction(
+    #          extracted_txns,
+    #          params["user_id"],
+    #          filename,
+    #          checksum
+    #        ) do
+    #   {:ok, saved_txns}
+    # end
+
     with %Plug.Upload{path: tmp_path, filename: filename} <- params["file"],
          {:ok, binary_file} <- FileProcessor.read_and_validate(params["file"]),
          {:ok, checksum} <- FileChecksum.new(binary_file),
          :ok <- DuplicateChecker.check_duplicate(params["user_id"], checksum),
          {:ok, extracted_texts} <-
            PdfExtractor.extract_texts(tmp_path, params["pdf_pw"]),
-         # {:ok, txns} <- RcbcParser.parse(extracted_texts) do
          {:ok, extracted_txns} <- txn_parse(params["bank"], extracted_texts),
          {:ok, {_, saved_txns}} <-
            save_statement_and_transaction(
@@ -22,6 +63,7 @@ defmodule CcSpendingApi.Statements do
              filename,
              checksum
            ) do
+      IO.inspect(saved_txns)
       {:ok, saved_txns}
     end
   end

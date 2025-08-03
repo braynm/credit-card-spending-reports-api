@@ -9,7 +9,6 @@ defmodule CcSpendingApi.Statements.Infra.EctoTransactionRepository do
 
   def create_batch_transaction(txns) do
     case Repo.insert_all(TransactionSchema, txns, returning: true) do
-      # {:ok, inserted_txns} -> {:ok, Enum.map(inserted_txns, &to_domain/1)}
       {:error, changeset} -> {:error, changeset}
       {_, inserted_txns} -> {:ok, Enum.map(inserted_txns, &to_domain/1)}
     end
@@ -17,7 +16,6 @@ defmodule CcSpendingApi.Statements.Infra.EctoTransactionRepository do
 
   defp to_domain(%TransactionSchema{} = schema) do
     {:ok, txn} = Transaction.new(schema)
-
     txn
   end
 end

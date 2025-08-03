@@ -42,6 +42,17 @@ defmodule CcSpendingApi.Statements.Domain.ValueObjects.Amount do
     {:ok, %__MODULE__{amount: storage_value}}
   end
 
+  # returns an unformatted and normalized value e.g. (12050 -> 120.50)
+  def from_db(amount) when is_binary(amount) do
+    amount =
+      amount
+      |> Decimal.new()
+      |> div_by_100()
+      |> Decimal.to_string(:normal)
+
+    {:ok, amount}
+  end
+
   def new(_), do: {:error, :invalid_amount}
 
   defp mult_by_100(%Decimal{} = amount) do
@@ -65,7 +76,8 @@ defmodule CcSpendingApi.Statements.Domain.ValueObjects.Amount do
       |> Decimal.to_string(:normal)
       |> format_with_commas()
 
-    "₱#{formatted}"
+    # "₱#{formatted}"
+    "#{formatted}"
   end
 
   defp format_with_commas(amount_string) do

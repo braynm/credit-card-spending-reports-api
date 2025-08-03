@@ -9,6 +9,7 @@ defmodule CcSpendingApi.EncryptedTypes do
 
   defmodule Money do
     use Cloak.Ecto.Type, vault: CcSpendingApi.Vault
+    alias CcSpendingApi.Statements.Domain.ValueObjects.Amount
 
     def cast(value) when is_binary(value) do
       case Decimal.new(value) do
@@ -17,10 +18,14 @@ defmodule CcSpendingApi.EncryptedTypes do
       end
     end
 
+    def cast(%Decimal{} = value) do
+      {:ok, value}
+    end
+
     def cast(%Decimal{} = value), do: {:ok, value}
     def cast(_), do: :error
 
-    def dump(value) do
+    def dump(%Amount{amount: value}) do
       case Decimal.to_string(value) do
         string when is_binary(string) -> {:ok, string}
         _ -> :error
@@ -28,10 +33,7 @@ defmodule CcSpendingApi.EncryptedTypes do
     end
 
     def load(value) do
-      case Decimal.new(value) do
-        %Decimal{} = decimal -> {:ok, decimal}
-        _ -> :error
-      end
+      {:ok, amt} = Amount.from_db(value)
     end
   end
 end

@@ -16,6 +16,7 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   ]
   """
 
+  alias CcSpendingApi.Statements.Domain.ValueObjects.Amount
   @behaviour CcSpendingApi.Statements.Domain.BankParser
 
   # Markers used to identify the start and end of transaction data in RCBC statements
@@ -173,11 +174,16 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   defp normalize_amt(amt) do
     amt = String.trim(amt)
 
-    if String.ends_with?(amt, "-") do
-      "-#{String.trim_trailing(amt, "-")}"
-    else
-      amt
-    end
+    amt =
+      if String.ends_with?(amt, "-") do
+        "-#{String.trim_trailing(amt, "-")}"
+      else
+        amt
+      end
+
+    {:ok, amt} = Amount.new(amt)
+
+    amt
   end
 
   def to_iso8601(date_str) do

@@ -13,5 +13,9 @@ defmodule CcSpendingApi.Authentication.Domain.ValueObjects.AuthenticatedUser do
     }
   end
 
+  def from_user(%User{} = user) do
+    new(user)
+  end
+
   def to_string(%__MODULE__{email: value}), do: value
 end
