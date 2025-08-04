@@ -1,6 +1,8 @@
 defmodule CcSpendingApi.CcSpendingApi.StatementsTest do
   use ExUnit.Case, async: true
 
+  import Double
+
   alias CcSpendingApi.Repo
   alias CcSpendingApi.Statements
   alias CcSpendingApi.Test.Doubles
@@ -10,6 +12,9 @@ defmodule CcSpendingApi.CcSpendingApi.StatementsTest do
   alias CcSpendingApi.Statements.Domain.Entities.Transaction
   alias CcSpendingApi.Statements.Application.Commands.UploadStatementTransaction
   alias CcSpendingApi.Statements.Domain.Services.StatementProcessingServices
+
+  alias CcSpendingApi.Statements.PdfExtractor
+  alias CcSpendingApi.Statements.Domain.Services.DuplicateChecker
 
   setup _ do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
@@ -55,6 +60,107 @@ defmodule CcSpendingApi.CcSpendingApi.StatementsTest do
                }
              ] = list
     end
+
+    @tag :statements
+    test "fails upload on invalid params" do
+      params = %{}
+
+      assert {:error,
+              %{
+                file: "PDF statement attachment is required",
+                user_id: "can't be blank",
+                bank: "can't be blank",
+                pdf_pw: "can't be blank"
+              }} =
+               Statements.upload_and_save_transactions_from_attachment(
+                 params,
+                 Doubles.statement_process_double()
+               )
+    end
+
+    @tag :statements
+    test "fails upload on invalid file" do
+      params = %{
+        "bank" => "rcbc",
+        "file" =>
+          valid_upload_file()
+          |> Map.put(:filename, "test.json"),
+        "pdf_pw" => "123123",
+        "user_id" => 11
+      }
+
+      assert {:error, %{file: "Unsupported file type. Supported files (.pdf)"}} =
+               Statements.upload_and_save_transactions_from_attachment(
+                 params,
+                 Doubles.statement_process_double()
+               )
+    end
+
+    @tag :statements
+    test "fails upload on duplicate import statement" do
+      params = %{
+        "bank" => "rcbc",
+        "file" => valid_upload_file(),
+        "pdf_pw" => "123123",
+        "user_id" => 11
+      }
+
+      assert {:error, {:duplicate_statement, card_id: "test"}} =
+               Statements.upload_and_save_transactions_from_attachment(
+                 params,
+                 Doubles.statement_process_double(
+                   duplicate_checker:
+                     DuplicateChecker
+                     |> stub(:check_duplicate, fn _, _ ->
+                       {:error, {:duplicate_statement, card_id: "test"}}
+                     end)
+                 )
+               )
+    end
+
+    @tag :statements
+    test "fails upload on incorrect password" do
+      params = %{
+        "bank" => "rcbc",
+        "file" => valid_upload_file(),
+        "pdf_pw" => "123123",
+        "user_id" => 11
+      }
+
+      assert {:error, ~c"Incorrect password"} =
+               Statements.upload_and_save_transactions_from_attachment(
+                 params,
+                 Doubles.statement_process_double(
+                   pdf_extractor:
+                     PdfExtractor
+                     |> stub(:extract_texts, fn _, _ ->
+                       {:error, ~c"Incorrect password"}
+                     end)
+                 )
+               )
+    end
+  end
+
+  @tag :statements
+  test "fails upload on malformed extracted_texts" do
+    params = %{
+      "bank" => "rcbc",
+      "file" => valid_upload_file(),
+      "pdf_pw" => "123123",
+      "user_id" => 11
+    }
+
+    assert {:error, :malformed_extracted_text} =
+             Statements.upload_and_save_transactions_from_attachment(
+               params,
+               Doubles.statement_process_double(
+                 pdf_extractor:
+                   PdfExtractor
+                   |> stub(:extract_texts, fn _, _ ->
+                     {:error, :malformed_extracted_text}
+                   end)
+               )
+             )
   end
 
   defp valid_upload_file do
@@ -63,14 +169,5 @@ defmodule CcSpendingApi.CcSpendingApi.StatementsTest do
       filename: "rcbc_statement_2024.pdf"
     }
     |> Map.put(:size, 4000)
-  end
-
-  defp valid_command do
-    UploadStatementTransaction.new(%{
-      file: valid_upload_file(),
-      bank: "rcbc",
-      user_id: 11,
-      pdf_pw: "valid_pw"
-    })
   end
 end

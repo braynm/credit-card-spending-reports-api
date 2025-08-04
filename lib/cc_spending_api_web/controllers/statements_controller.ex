@@ -24,6 +24,9 @@ defmodule CcSpendingApiWeb.StatementsController do
       {:error, ~c"Incorrect password"} ->
         json(conn, %{error: "Incorrect statement .pdf password"})
 
+      {:error, :malformed_extracted_text} ->
+        json(conn, %{error: "There is a problem parsing the .pdf statement"})
+
       {:error, error} ->
         json(conn, %{error: error})
     end

@@ -90,13 +90,23 @@ defmodule CcSpendingApi.Test.Doubles do
   def statement_process_double(overrides \\ [])
 
   def statement_process_double(overrides) do
-    %StatementProcessingServices{
+    defaults = %{
       file_processor: file_processor(),
       duplicate_checker: duplicate_checker(),
       pdf_extractor: pdf_extractor(),
       save_statement_service: save_statement_service(),
       transaction_fn: fn fun -> Repo.transaction(fun) end,
       txn_meta_repository: []
+    }
+
+    impl = Map.merge(defaults, Map.new(overrides))
+
+    %StatementProcessingServices{
+      file_processor: impl.file_processor,
+      duplicate_checker: impl.duplicate_checker,
+      pdf_extractor: impl.pdf_extractor,
+      save_statement_service: impl.save_statement_service,
+      transaction_fn: impl.transaction_fn
     }
   end
 

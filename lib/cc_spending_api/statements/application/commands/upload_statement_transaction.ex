@@ -71,7 +71,7 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
       )
     end
 
-    defp validate_bank(%Ecto.Changeset{changes: changes} = changeset) do
+    defp validate_bank(%Ecto.Changeset{valid?: true, changes: changes} = changeset) do
       if String.downcase(changes.bank) not in @supported_banks do
         add_error(
           changeset,
@@ -82,6 +82,8 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
         changeset
       end
     end
+
+    defp validate_bank(changeset), do: changeset
 
     defp validate_file_size(changeset, _), do: changeset
 

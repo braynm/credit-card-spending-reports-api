@@ -49,7 +49,11 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
       |> find_transaction_list()
       |> normalize_and_to_transaction()
 
-    {:ok, txns}
+    case txns do
+      {:error, error} -> {:error, error}
+      [] -> {:error, :empty_list}
+      txns when is_list(txns) -> {:ok, txns}
+    end
   end
 
   def parse(_), do: {:error, :malformed_extracted_text}
@@ -66,11 +70,13 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   ## Returns
   - Same structure but with all charlists converted to strings
   """
-  defp charlist_to_sigil(extracted_texts) do
+  defp charlist_to_sigil(extracted_texts) when is_list(extracted_texts) do
     Enum.map(extracted_texts, fn page ->
       Enum.map(page, fn row -> Enum.map(row, &to_string/1) end)
     end)
   end
+
+  defp charlist_to_sigil(extracted_texts), do: parse(nil)
 
   @doc """
   Locates the page containing transaction data within the PDF.
@@ -91,7 +97,11 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
         Enum.find(page, fn row -> row == @txn_start_marker end)
       end)
 
-    Enum.at(extracted_texts, index)
+    if is_nil(index) do
+      parse(nil)
+    else
+      Enum.at(extracted_texts, index)
+    end
   end
 
   @doc """
@@ -111,12 +121,14 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   ## Returns
   - List of raw transaction rows (each row is a list of tokens)
   """
-  defp find_transaction_list(extracted_texts) do
+  defp find_transaction_list(extracted_texts) when is_list(extracted_texts) do
     start_marker = Enum.find_index(extracted_texts, &(&1 == @txn_start_marker)) + 2
     end_marker = Enum.find_index(extracted_texts, &(&1 == @txn_end_marker)) - 1
 
     result = Enum.slice(extracted_texts, start_marker, end_marker - start_marker)
   end
+
+  defp find_transaction_list(_), do: parse(nil)
 
   @doc """
   Transforms raw transaction rows into structured transaction maps.
@@ -151,7 +163,7 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
     end)
   end
 
-  defp normalize_and_to_transaction(result) do
+  defp normalize_and_to_transaction(result) when is_list(result) do
     Enum.map(result, fn txn ->
       [sale_date, post_date | rest] = txn
       {desc, [amt]} = Enum.split(rest, -1)
@@ -165,6 +177,8 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
       }
     end)
   end
+
+  defp normalize_and_to_transaction(result), do: parse(nil)
 
   @doc """
   Normalizes RCBC amount format to standard decimal representation.
