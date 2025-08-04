@@ -54,6 +54,14 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
       |> validate_file_size(file)
     end
 
+    defp validate_file(changeset) do
+      add_error(
+        changeset,
+        :file,
+        "PDF statement attachment is required"
+      )
+    end
+
     defp validate_file_size(changeset = %Ecto.Changeset{}, %{content_type: _, size: size})
          when size > @max_file_size do
       add_error(

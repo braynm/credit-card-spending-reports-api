@@ -19,6 +19,7 @@ defmodule CcSpendingApi.Statements.Application.Handlers.UploadStatementHandler d
 
   def handle(%UploadStatementTransaction{} = command, deps) do
     %StatementProcessingServices{
+      file_processor: file_processor,
       duplicate_checker: duplicate_checker,
       pdf_extractor: pdf_extractor,
       save_statement_service: save_statement_service,
@@ -30,9 +31,9 @@ defmodule CcSpendingApi.Statements.Application.Handlers.UploadStatementHandler d
     transaction_fn = transaction_fn || (&default_transaction/1)
 
     result =
-      transaction_fn.(fn repo ->
+      transaction_fn.(fn ->
         with %Plug.Upload{path: tmp_path, filename: filename} <- command.file,
-             {:ok, binary_file} <- FileProcessor.read_and_validate(command.file),
+             {:ok, binary_file} <- file_processor.read_and_validate(command.file),
              {:ok, checksum} <- FileChecksum.new(binary_file),
              :ok <- duplicate_checker.check_duplicate(command.user_id, checksum),
              {:ok, extracted_texts} <-
@@ -50,7 +51,7 @@ defmodule CcSpendingApi.Statements.Application.Handlers.UploadStatementHandler d
         else
           {:error, error} ->
             # something went wrong. Lets rollback.
-            repo.rollback(error)
+            Repo.rollback(error)
         end
       end)
 

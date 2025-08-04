@@ -1,11 +1,13 @@
 defmodule CcSpendingApi.Statements.Domain.Services.StatementProcessingServices do
   alias CcSpendingApi.Statements.PdfExtractor
+  alias CcSpendingApi.Statements.Domain.Services.FileProcessor
   alias CcSpendingApi.Statements.Infra.EctoTransactionRepository
   alias CcSpendingApi.Statements.Infra.EctoTransactionMetaRepository
   alias CcSpendingApi.Statements.Domain.Services.DuplicateChecker
   alias CcSpendingApi.Statements.Domain.Services.SaveStatementService
 
   defstruct [
+    :file_processor,
     :duplicate_checker,
     :pdf_extractor,
     :save_statement_service,
@@ -16,6 +18,7 @@ defmodule CcSpendingApi.Statements.Domain.Services.StatementProcessingServices d
 
   def default do
     %__MODULE__{
+      file_processor: FileProcessor,
       pdf_extractor: PdfExtractor,
       duplicate_checker: DuplicateChecker,
       save_statement_service: SaveStatementService,
