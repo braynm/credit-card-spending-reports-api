@@ -1,5 +1,6 @@
 defmodule CcSpendingApi.Test.Doubles do
   import Double
+  alias Mix.Shell.IO
   alias CcSpendingApi.Repo
   alias CcSpendingApi.Shared.{Result, Errors}
   alias CcSpendingApi.Authentication.Domain.ValueObjects.{Password}
@@ -13,6 +14,7 @@ defmodule CcSpendingApi.Test.Doubles do
   alias CcSpendingApi.Statements.Infra.EctoTransactionMetaRepository
   alias CcSpendingApi.Statements.Domain.Services.DuplicateChecker
   alias CcSpendingApi.Statements.Domain.Services.SaveStatementService
+  alias CcSpendingApi.Statements.Domain.Entities.Transaction
 
   def user_repository_double(overrides \\ []) do
     defaults = %{
@@ -94,7 +96,6 @@ defmodule CcSpendingApi.Test.Doubles do
       pdf_extractor: pdf_extractor(),
       save_statement_service: save_statement_service(),
       transaction_fn: fn fun -> Repo.transaction(fun) end,
-      txn_repository: [],
       txn_meta_repository: []
     }
   end
@@ -116,7 +117,39 @@ defmodule CcSpendingApi.Test.Doubles do
 
   defp save_statement_service do
     SaveStatementService
-    |> stub(:save_statement_and_transaction, fn _ -> {:ok, valid_parsed_txns()} end)
+    |> stub(:save_statement_and_transaction, fn _ -> {:ok, valid_inserted_txns()} end)
+  end
+
+  # defp save_statement_service do
+  #   SaveStatementService
+  #   |> stub(:save_statement_and_transaction, fn _ ->
+  #     {:ok, valid_inserted_txns()}
+  #   end)
+  # end
+
+  defp valid_inserted_txns do
+    statement_id = Ecto.UUID.generate()
+    user_id = Ecto.UUID.generate()
+
+    Enum.map(valid_parsed_txns(), fn txn ->
+      txn =
+        txn
+        |> Map.put(:statement_id, statement_id)
+        |> Map.put(:id, user_id)
+        |> Map.put(:user_id, 11)
+        |> Map.put(:inserted_at, DateTime.utc_now())
+        |> Map.put(:updated_at, DateTime.utc_now())
+
+      {:ok, txn} = Transaction.new(txn)
+
+      txn
+    end)
+
+    # items =
+    #   Enum.map(valid_parsed_txns(), fn item ->
+    #     {:ok, txn} = Transaction.from_schema(item)
+    #     txn
+    #   end)
   end
 
   defp valid_extracted_texts do

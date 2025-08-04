@@ -7,6 +7,7 @@ defmodule CcSpendingApi.CcSpendingApi.StatementsTest do
 
   alias CcSpendingApi.Shared.{Result, Errors}
 
+  alias CcSpendingApi.Statements.Domain.Entities.Transaction
   alias CcSpendingApi.Statements.Application.Commands.UploadStatementTransaction
   alias CcSpendingApi.Statements.Domain.Services.StatementProcessingServices
 
@@ -25,11 +26,34 @@ defmodule CcSpendingApi.CcSpendingApi.StatementsTest do
         "user_id" => 11
       }
 
-      assert {:ok, _} =
+      assert {:ok, list} =
                Statements.upload_and_save_transactions_from_attachment(
                  params,
                  Doubles.statement_process_double()
                )
+
+      assert length(list) == 3
+
+      assert [
+               %Transaction{
+                 sale_date: "2025-06-08",
+                 posted_date: "2025-06-08",
+                 details: "BONCHON MAKILING CALAMBA PH",
+                 amount: "605.00"
+               },
+               %Transaction{
+                 sale_date: "2025-06-13",
+                 posted_date: "2026-06-16",
+                 details: "MERCURYDRUGCORP1016 CALAMBA PH",
+                 amount: "105.00"
+               },
+               %Transaction{
+                 sale_date: "2025-06-13",
+                 posted_date: "2026-06-16",
+                 details: "GOLDILOCKS WATLERMART LAGUNA PH",
+                 amount: "220.00"
+               }
+             ] = list
     end
   end
 
