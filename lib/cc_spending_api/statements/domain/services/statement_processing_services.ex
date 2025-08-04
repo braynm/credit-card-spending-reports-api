@@ -10,7 +10,8 @@ defmodule CcSpendingApi.Statements.Domain.Services.StatementProcessingServices d
     :pdf_extractor,
     :save_statement_service,
     :txn_repository,
-    :txn_meta_repository
+    :txn_meta_repository,
+    :transaction_fn
   ]
 
   def default do
@@ -19,7 +20,8 @@ defmodule CcSpendingApi.Statements.Domain.Services.StatementProcessingServices d
       duplicate_checker: DuplicateChecker,
       save_statement_service: SaveStatementService,
       txn_repository: EctoTransactionRepository,
-      txn_meta_repository: EctoTransactionMetaRepository
+      txn_meta_repository: EctoTransactionMetaRepository,
+      transaction_fn: nil
     }
   end
 end
