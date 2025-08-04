@@ -9,6 +9,7 @@ defmodule CcSpendingApi.Statements do
   alias CcSpendingApi.Statements.Application.Handlers.UploadStatementHandler
   alias CcSpendingApi.Statements.Infra.EctoTransactionRepository
   alias CcSpendingApi.Statements.Infra.EctoTransactionMetaRepository
+  alias CcSpendingApi.Statements.Domain.Services.StatementProcessingServices
 
   # def upload_and_save_transactions_from_attachment(params) do
   #   with %Plug.Upload{path: tmp_path, filename: filename} <- params["file"],
@@ -77,12 +78,7 @@ defmodule CcSpendingApi.Statements do
     # end
   end
 
-  defp default_deps do
-    %{
-      txn_repository: EctoTransactionRepository,
-      txn_meta_repository: EctoTransactionMetaRepository
-    }
-  end
+  defp default_deps, do: StatementProcessingServices.default()
 
   defp save_statement_and_transaction(txns, user_id, filename, checksum) do
     SaveStatementService.save_statement_and_transaction(%{

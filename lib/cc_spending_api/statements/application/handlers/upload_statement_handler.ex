@@ -10,40 +10,54 @@ defmodule CcSpendingApi.Statements.Application.Handlers.UploadStatementHandler d
   alias CcSpendingApi.Statements.Domain.ValueObjects.FileChecksum
   alias CcSpendingApi.Statements.Application.Commands.UploadStatementTransaction
 
-  @type deps :: %{
-          card_repository: CardStatementRepo.t(),
-          txn_repository: TransactionRepo.t(),
-          transaction_fn: function() | nil
-        }
+  # @type deps :: %{
+  #         card_repository: CardStatementRepo.t(),
+  #         txn_repository: TransactionRepo.t(),
+  #         transaction_fn: function() | nil
+  #       }
 
   def handle(%UploadStatementTransaction{} = command, deps) do
     transaction_fn = deps[:transaction_fn] || (&default_transaction/1)
+
+    %{
+      duplicate_checker: duplicate_checker,
+      pdf_extractor: pdf_extractor,
+      save_statement_service: save_statement_service,
+      txn_repository: txn_repository,
+      txn_meta_repository: txn_meta_repository
+    } = deps
 
     {:ok, txns} =
       transaction_fn.(fn ->
         with %Plug.Upload{path: tmp_path, filename: filename} <- command.file,
              {:ok, binary_file} <- FileProcessor.read_and_validate(command.file),
              {:ok, checksum} <- FileChecksum.new(binary_file),
-             :ok <- DuplicateChecker.check_duplicate(command.user_id, checksum),
+             :ok <- duplicate_checker.check_duplicate(command.user_id, checksum),
              {:ok, extracted_texts} <-
-               PdfExtractor.extract_texts(tmp_path, command.pdf_pw),
+               pdf_extractor.extract_texts(tmp_path, command.pdf_pw),
              {:ok, extracted_txns} <- txn_parse(command.bank, extracted_texts),
              {:ok, {_, saved_txns}} <-
                save_statement_and_transaction(
+                 save_statement_service,
                  extracted_txns,
                  command.user_id,
                  filename,
                  checksum
                ) do
           {:ok, saved_txns}
+        else
+          {:error, error} ->
+            # something went wrong. Lets rollback.
+            Repo.rollback()
+            {:error, error}
         end
       end)
 
     txns
   end
 
-  defp save_statement_and_transaction(txns, user_id, filename, checksum) do
-    SaveStatementService.save_statement_and_transaction(%{
+  defp save_statement_and_transaction(save_stmnt_service, txns, user_id, filename, checksum) do
+    save_stmnt_service.save_statement_and_transaction(%{
       "filename" => filename,
       "file_checksum" => checksum,
       "user_id" => user_id,
