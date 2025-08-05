@@ -53,6 +53,8 @@ defmodule CcSpendingApiWeb.Router do
 
     get "/auth/test", AuthController, :test
     get "/auth/logout", AuthController, :logout
+
+    post "/statements/upload", StatementsController, :upload
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

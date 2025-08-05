@@ -12,9 +12,7 @@ defmodule CcSpendingApi.Authentication.Domain.ValueObjects.Password do
       Result.ok(%__MODULE__{value: password})
     else
       Result.error(%Errors.ValidationError{
-        message: "Password must be at least #{@min_length}",
-        field: :password,
-        value: nil
+        message: "Password must be at least #{@min_length}"
       })
     end
   end
@@ -22,9 +20,7 @@ defmodule CcSpendingApi.Authentication.Domain.ValueObjects.Password do
   def new(_),
     do:
       Result.error(%Errors.ValidationError{
-        message: "Password must be a string",
-        field: :password,
-        value: nil
+        message: "Password must be a string"
       })
 
   def to_string(%__MODULE__{value: value}), do: value

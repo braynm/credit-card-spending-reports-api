@@ -3,8 +3,12 @@ defmodule CcSpendingApi.Shared.Errors do
     defexception [:message, :code]
   end
 
+  # defmodule ValidationError do
+  #   defexception [:message, :field, :value]
+  # end
+
   defmodule ValidationError do
-    defexception [:message, :field, :value]
+    defexception [:message]
   end
 
   defmodule NotFoundError do

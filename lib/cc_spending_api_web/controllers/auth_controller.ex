@@ -9,13 +9,10 @@ defmodule CcSpendingApiWeb.AuthController do
     audience = Map.get(params, "audience", "web")
 
     case Authentication.register(params["email"], params["password"], audience) do
-      {:ok, %{user: user, session: {_session, token}}} ->
+      {:ok, %{user: user, session: _session, token: token}} ->
         user =
           user
           |> Map.from_struct()
-          |> IO.inspect()
-          |> Map.update(:email, nil, & &1.value)
-          |> Map.drop([:password_hash])
 
         conn
         |> put_status(:created)
@@ -26,9 +23,15 @@ defmodule CcSpendingApiWeb.AuthController do
         |> put_status(400)
         |> json(%{
           error:
-            error
-            |> Map.from_struct()
-            |> Map.drop([:__exception__])
+            cond do
+              is_struct(error) ->
+                error
+                |> Map.from_struct()
+                |> Map.drop([:__exception__])
+
+              true ->
+                error
+            end
         })
     end
   end
@@ -45,7 +48,6 @@ defmodule CcSpendingApiWeb.AuthController do
           user
           |> Map.from_struct()
           |> IO.inspect()
-          |> Map.update(:email, nil, & &1.value)
 
         conn
         |> put_status(:created)

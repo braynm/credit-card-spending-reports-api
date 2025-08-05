@@ -1,6 +1,7 @@
 defmodule CcSpendingApi.Authentication.Application.Handlers.LoginUserHandler do
   alias CcSpendingApi.Authentication.Application.Commands.LoginUser
   alias CcSpendingApi.Authentication.Domain.Services.AuthenticationService
+  alias CcSpendingApi.Authentication.Domain.ValueObjects.AuthenticatedUser
   alias CcSpendingApi.Shared.Result
 
   @type deps :: %{
@@ -12,7 +13,8 @@ defmodule CcSpendingApi.Authentication.Application.Handlers.LoginUserHandler do
     with {:ok, user} <- AuthenticationService.authenticate(command.email, command.password, deps),
          {:ok, session} <- AuthenticationService.create_session(user, deps) do
       Result.ok(%{
-        user: Map.drop(user, [:password_hash]),
+        user: AuthenticatedUser.new(user),
+        # TODO: create session DTO
         session: session
       })
     else

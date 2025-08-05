@@ -1,9 +1,20 @@
 defmodule CcSpendingApi.Test.Doubles do
-  alias CcSpendingApi.Authentication.Domain.Repositories.{UserRepository, SessionRepository}
-  alias CcSpendingApi.Authentication.Domain.Entities.{User, Session}
-  alias CcSpendingApi.Authentication.Domain.ValueObjects.{Password}
-  alias CcSpendingApi.Shared.{Result, Errors}
   import Double
+  alias Mix.Shell.IO
+  alias CcSpendingApi.Repo
+  alias CcSpendingApi.Shared.{Result, Errors}
+  alias CcSpendingApi.Authentication.Domain.ValueObjects.{Password}
+  alias CcSpendingApi.Authentication.Domain.Entities.{User, Session}
+  alias CcSpendingApi.Statements.Domain.Services.StatementProcessingServices
+  alias CcSpendingApi.Authentication.Domain.Repositories.{UserRepository, SessionRepository}
+
+  alias CcSpendingApi.Statements.PdfExtractor
+  alias CcSpendingApi.Statements.Domain.Services.FileProcessor
+  alias CcSpendingApi.Statements.Infra.EctoTransactionRepository
+  alias CcSpendingApi.Statements.Infra.EctoTransactionMetaRepository
+  alias CcSpendingApi.Statements.Domain.Services.DuplicateChecker
+  alias CcSpendingApi.Statements.Domain.Services.SaveStatementService
+  alias CcSpendingApi.Statements.Domain.Entities.Transaction
 
   def user_repository_double(overrides \\ []) do
     defaults = %{
@@ -66,5 +77,127 @@ defmodule CcSpendingApi.Test.Doubles do
         other -> {:ok, other}
       end
     end
+
+    # fn fun ->
+    #   try do
+    #     {:ok, fun.()}
+    #   catch
+    #     :throw, {:rollback, reason} -> {:error, reason}
+    #   end
+    # end
+  end
+
+  def statement_process_double(overrides \\ [])
+
+  def statement_process_double(overrides) do
+    defaults = %{
+      file_processor: file_processor(),
+      duplicate_checker: duplicate_checker(),
+      pdf_extractor: pdf_extractor(),
+      save_statement_service: save_statement_service(),
+      transaction_fn: fn fun -> Repo.transaction(fun) end,
+      txn_meta_repository: []
+    }
+
+    impl = Map.merge(defaults, Map.new(overrides))
+
+    %StatementProcessingServices{
+      file_processor: impl.file_processor,
+      duplicate_checker: impl.duplicate_checker,
+      pdf_extractor: impl.pdf_extractor,
+      save_statement_service: impl.save_statement_service,
+      transaction_fn: impl.transaction_fn
+    }
+  end
+
+  defp pdf_extractor do
+    PdfExtractor
+    |> stub(:extract_texts, fn _, _ -> {:ok, valid_extracted_texts()} end)
+  end
+
+  defp file_processor do
+    FileProcessor
+    |> stub(:read_and_validate, fn _ -> {:ok, "TEST"} end)
+  end
+
+  defp duplicate_checker do
+    DuplicateChecker
+    |> stub(:check_duplicate, fn _, _ -> :ok end)
+  end
+
+  defp save_statement_service do
+    SaveStatementService
+    |> stub(:save_statement_and_transaction, fn _ -> {:ok, valid_inserted_txns()} end)
+  end
+
+  # defp save_statement_service do
+  #   SaveStatementService
+  #   |> stub(:save_statement_and_transaction, fn _ ->
+  #     {:ok, valid_inserted_txns()}
+  #   end)
+  # end
+
+  defp valid_inserted_txns do
+    statement_id = Ecto.UUID.generate()
+    user_id = Ecto.UUID.generate()
+
+    Enum.map(valid_parsed_txns(), fn txn ->
+      txn =
+        txn
+        |> Map.put(:statement_id, statement_id)
+        |> Map.put(:id, user_id)
+        |> Map.put(:user_id, 11)
+        |> Map.put(:inserted_at, DateTime.utc_now())
+        |> Map.put(:updated_at, DateTime.utc_now())
+
+      {:ok, txn} = Transaction.new(txn)
+
+      txn
+    end)
+
+    # items =
+    #   Enum.map(valid_parsed_txns(), fn item ->
+    #     {:ok, txn} = Transaction.from_schema(item)
+    #     txn
+    #   end)
+  end
+
+  defp valid_extracted_texts do
+    [
+      [[]],
+      [
+        [~c"PREVIOUS", ~c"STATEMENT", ~c"BALANCE"],
+        [],
+        [~c"06/08/25", ~c"06/09/25", ~c"BONCHON", ~c"MAKILING", ~c"CALAMBA", ~c"PH", ~c"605.00"],
+        [~c"06/13/25", ~c"06/16/25", ~c"MERCURYDRUGCORP1016", ~c"CALAMBA", ~c"PH", ~c"105.00"],
+        [~c"06/13/25", ~c"06/16/25", ~c"GOLDILOCKS-WALTERMART", ~c"LAGUNA", ~c"PH", ~c"220.00"],
+        [~c"999999"],
+        [~c"BALANCE", ~c"END"]
+      ],
+      [[]]
+    ]
+  end
+
+  defp valid_parsed_txns do
+    [
+      %{
+        sale_date: ~U[2025-06-08 00:00:00Z],
+        posted_date: ~U[2025-06-08 00:00:00Z],
+        encrypted_details: "BONCHON MAKILING CALAMBA PH",
+        encrypted_amount: "605.00"
+      },
+      %{
+        sale_date: ~U[2025-06-13 00:00:00Z],
+        posted_date: ~U[2026-06-16 00:00:00Z],
+        encrypted_details: "MERCURYDRUGCORP1016 CALAMBA PH",
+        encrypted_amount: "105.00"
+      },
+      %{
+        sale_date: ~U[2025-06-13 00:00:00Z],
+        posted_date: ~U[2026-06-16 00:00:00Z],
+        encrypted_details: "GOLDILOCKS WATLERMART LAGUNA PH",
+        encrypted_amount: "220.00"
+      }
+    ]
   end
 end

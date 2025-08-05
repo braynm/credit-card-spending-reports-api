@@ -4,6 +4,8 @@ defmodule CcSpendingApi.Authentication.Application.Handlers.RegisterUserHandler 
   alias CcSpendingApi.Authentication.Application.Commands.RegisterUser
   alias CcSpendingApi.Authentication.Domain.Repositories.UserRepository
   alias CcSpendingApi.Authentication.Domain.Services.AuthenticationService
+  alias CcSpendingApi.Authentication.Domain.Services.UserRegistrationService
+  alias CcSpendingApi.Authentication.Domain.ValueObjects.RegisteredUser
 
   alias CcSpendingApi.Repo
 
@@ -18,17 +20,18 @@ defmodule CcSpendingApi.Authentication.Application.Handlers.RegisterUserHandler 
 
     result =
       transaction_fn.(fn ->
-        with false <- deps.user_repository.email_exists?(command.email),
-             {:ok, user} <- User.new(%{email: command.email, password: command.password}),
-             {:ok, saved_user} <- deps.user_repository.save(user),
+        with {:ok, saved_user} <-
+               UserRegistrationService.register_user(command.email, command.password, deps),
              {:ok, {session, token}} <- AuthenticationService.create_session(saved_user, deps) do
-          Result.ok(%{user: saved_user, session: session, token: token})
+          Result.ok(%{
+            user: RegisteredUser.new(saved_user),
+            session: session,
+            token: token
+          })
         else
           true ->
             Result.error(%Errors.ValidationError{
-              message: "Email already exists",
-              field: :email,
-              value: command.email
+              message: "Email already exists"
             })
 
           error ->

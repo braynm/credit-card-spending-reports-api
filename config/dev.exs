@@ -101,3 +101,13 @@ config :guardian, Guardian.DB,
   # token_types: ["refresh_token"],
   # default: 60 minutes
   sweep_interval: 60
+
+config :cc_spending_api, CcSpendingApi.Vault,
+  ciphers: [
+    default:
+      {Cloak.Ciphers.AES.GCM,
+       tag: "AES.GCM.V1", key: Base.decode64!("vyfHYqlB9CzhEj4AG8plm/5k0eBTsvVvDPBCqp5U7ew=")},
+    deprecated:
+      {Cloak.Ciphers.AES.CTR,
+       tag: "AES.CTR.V1", key: Base.decode64!("vyfHYqlB9CzhEj4AG8plm/5k0eBTsvVvDPBCqp5U7ew=")}
+  ]

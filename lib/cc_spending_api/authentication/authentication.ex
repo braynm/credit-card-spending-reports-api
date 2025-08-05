@@ -8,6 +8,8 @@ defmodule CcSpendingApi.Authentication do
   """
 
   alias CcSpendingApi.Authentication.Domain.Entities.{User, Session}
+  alias CcSpendingApi.Authentication.Domain.ValueObjects.AuthenticatedUser
+  alias CcSpendingApi.Authentication.Domain.ValueObjects.RegisteredUser
   alias CcSpendingApi.Shared.Result
 
   alias CcSpendingApi.Authentication.Application.Commands.{
@@ -56,7 +58,7 @@ defmodule CcSpendingApi.Authentication do
 
   ## Examples
       iex> Authentication.register("user@example.com", "password123")
-        {:ok, %{user: %User{}, session: %Session{}, token: "jwt_token..."}}
+        {:ok, %{user: %RegisteredUser{}, session: %Session{}, token: "jwt_token..."}}
       
       iex> Authentication.register("user@example.com", "password123", "mobile")
       {:ok, %{user: %User{}, session: %Session{aud: "mobile"}, token: "jwt_token..."}}
@@ -70,9 +72,15 @@ defmodule CcSpendingApi.Authentication do
     params = %{email: email, password: password}
     deps = deps || default_deps()
 
-    params
-    |> RegisterUser.new()
-    |> RegisterUserHandler.handle(deps)
+    with {:ok, command} <- RegisterUser.new(params) do
+      RegisterUserHandler.handle(command, deps)
+    else
+      {:error, %Ecto.Changeset{} = error} ->
+        {:error, error}
+
+      error ->
+        IO.inspect(error)
+    end
   end
 
   @doc """
@@ -89,10 +97,13 @@ defmodule CcSpendingApi.Authentication do
 
   ## Examples
       iex> Authentication.login("user@example.com", "password123")
-      {:ok, %{user: %User{}, session: %Session{}, token: "jwt_token..."}}
+      {:ok, %{user: %AuthenticatedUser{}, session: %Session{}, token: "jwt_token..."}}
       
       iex> Authentication.login("user@example.com", "wrong_password")
       {:error, %AuthenticationError{message: "Invalid credentials"}}
+
+      iex> Authentication.login("", "wrong_password")
+      {:error, %Ecto.Changeset{invalid? true, ...}}
   """
   @spec login(String.t(), String.t(), audience(), map()) :: auth_result()
   def login(email, password, audience \\ "web", deps \\ nil) do
@@ -121,7 +132,7 @@ defmodule CcSpendingApi.Authentication do
 
   ## Examples
       iex> Authentication.validate_session("valid_jwt_token")
-      {:ok, %{user: %User{}, session: %Session{}}}
+      {:ok, %{user: %RegisteredUser{}, session: %Session{}}}
       
       iex> Authentication.validate_session("invalid_token")
       {:error, %AuthenticationError{message: "Invalid session"}}
