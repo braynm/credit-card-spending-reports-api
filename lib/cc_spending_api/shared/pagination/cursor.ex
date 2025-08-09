@@ -9,14 +9,14 @@ defmodule CcSpendingApi.Shared.Pagination.Cursor do
 
     position
     |> Jason.encode!()
-    |> Base.encode64(padding: false
+    |> Base.encode64(padding: false)
   end
 
   def decode(nil), do: {:ok, nil}
 
   def decode(cursor_token) when is_binary(cursor_token) do
     with {:ok, json} <- Base.decode64(cursor_token, padding: false),
-    {:ok, position} <- Jason.decode(json) do
+         {:ok, position} <- Jason.decode(json) do
       {:ok, deserialize_position(position)}
     else
       _ -> {:error, :invalid_cursor}
@@ -29,7 +29,7 @@ defmodule CcSpendingApi.Shared.Pagination.Cursor do
   defp serialize_value(%DateTime{} = dt), do: DateTime.to_iso8601(dt)
   defp serialize_value(%NaiveDateTime{} = dt), do: NaiveDateTime.to_iso8601(dt)
   defp serialize_value(%Decimal{} = decimal), do: Decimal.to_string(decimal)
-  defp serialize_value(%Ecto.UUID{} = uuid), do: Ecto.UUID.cast!(uuid)
+  defp serialize_value(uuid), do: Ecto.UUID.cast!(uuid)
   defp serialize_value(value), do: value
 
   defp deserialize_position(position) do
@@ -45,21 +45,23 @@ defmodule CcSpendingApi.Shared.Pagination.Cursor do
           {:ok, dt, _} -> dt
           _ -> value
         end
-      
+
       Regex.match?(~r/^\d+\.\d+$/, value) ->
         case Decimal.new(value) do
           %Decimal{} = d -> d
           _ -> value
         end
-      
+
       Regex.match?(~r/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, value) ->
         case Ecto.UUID.cast(value) do
           {:ok, uuid} -> uuid
           _ -> value
         end
-      
-      true -> value
+
+      true ->
+        value
     end
   end
+
   defp deserialize_value(value), do: value
 end

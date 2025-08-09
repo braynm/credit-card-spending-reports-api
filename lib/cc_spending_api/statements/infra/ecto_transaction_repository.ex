@@ -25,8 +25,9 @@ defmodule CcSpendingApi.Statements.Infra.EctoTransactionRepository do
     params
   end
 
+  @spec list_user_transaction(integer()) :: Ecto.Queryable.t()
   def list_user_transaction(user_id) do
     from t in Transaction,
-         where(t.user_id == ^user_id)
+      where: t.user_id == ^user_id
   end
 end

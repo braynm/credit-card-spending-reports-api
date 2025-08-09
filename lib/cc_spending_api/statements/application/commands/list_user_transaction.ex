@@ -20,10 +20,12 @@ defmodule CcSpendingApi.Statements.Application.Commands.ListUserTransaction do
   @default_limit 20
   @max_limit 50
 
-  def new(queryable, opts \\ []) do
-    with {:ok, validated_opts} <- validate_options(opts) do
+  def new(opts \\ [])
+
+  def new(opts) do
+    with {:ok, validated_opts} <- validate_options(opts),
+         user_id when not is_nil(user_id) <- validated_opts[:user_id] do
       command = %__MODULE__{
-        queryable: queryable,
         cursor: validated_opts[:cursor],
         sort: validated_opts[:sort],
         filters: validated_opts[:filters],
@@ -31,11 +33,15 @@ defmodule CcSpendingApi.Statements.Application.Commands.ListUserTransaction do
       }
 
       {:ok, command}
+    else
+      nil -> {:error, :required_user_id}
+      error -> error
     end
   end
 
   defp validate_options(opts) do
     cursor = Keyword.get(opts, :cursor)
+    user_id = Keyword.get(opts, :user_id)
     sort = Keyword.get(opts, :sort, @default_sort)
     filters = Keyword.get(opts, :filters, %{})
     limit = min(Keyword.get(opts, :limit, @default_limit), @max_limit)
@@ -43,7 +49,7 @@ defmodule CcSpendingApi.Statements.Application.Commands.ListUserTransaction do
     with :ok <- validate_sort(sort),
          :ok <- validate_filters(filters),
          :ok <- validate_limit(limit) do
-      {:ok, [cursor: cursor, sort: sort, filters: filters, limit: limit]}
+      {:ok, [cursor: cursor, sort: sort, filters: filters, limit: limit, user_id: user_id]}
     end
   end
 

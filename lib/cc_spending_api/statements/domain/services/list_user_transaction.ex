@@ -10,6 +10,6 @@ defmodule CcSpendingApi.Statements.Domain.Services.ListUserTransaction do
   end
 
   defp build_base_query(%ListUserTransactionCommand{} = command) do
-    Result.ok(EctoTransactionRepository.list_user_transaction(user_id))
+    Result.ok(EctoTransactionRepository.list_user_transaction(command.user_id))
   end
 end
