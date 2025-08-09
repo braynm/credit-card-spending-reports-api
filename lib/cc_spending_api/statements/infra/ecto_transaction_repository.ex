@@ -24,4 +24,9 @@ defmodule CcSpendingApi.Statements.Infra.EctoTransactionRepository do
     # {:ok, txn} = Transaction.from_schema(schema)
     params
   end
+
+  def list_user_transaction(user_id) do
+    from t in Transaction,
+         where(t.user_id == ^user_id)
+  end
 end

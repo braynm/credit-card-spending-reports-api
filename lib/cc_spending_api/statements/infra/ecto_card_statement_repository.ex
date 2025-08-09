@@ -8,6 +8,7 @@ defmodule CcSpendingApi.Statements.Infra.EctoCardStatementRepository do
   alias CcSpendingApi.Statements.Domain.Entities.CardStatement
   alias CcSpendingApi.Statements.Infra.Schemas.CardStatementSchema
 
+  @impl true
   def find_by_checksum(user_id, checksum) do
     query =
       from(q in CardStatementSchema,
@@ -19,6 +20,7 @@ defmodule CcSpendingApi.Statements.Infra.EctoCardStatementRepository do
     Repo.one(query)
   end
 
+  @impl true
   def save_statement(%CardStatement{id: nil} = statement) do
     attrs = %{
       file_checksum: statement.file_checksum,
