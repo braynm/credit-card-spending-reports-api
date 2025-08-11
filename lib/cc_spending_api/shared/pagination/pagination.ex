@@ -100,7 +100,7 @@ defmodule CcSpendingApi.Shared.Pagination do
     query =
       command.queryable
       # |> apply_filters(command.filters)
-      # |> apply_cursor_conditions(cursor_position, command.filters)
+      |> apply_cursor_conditions(cursor_position, command.sort)
       |> apply_ordering(command.sort)
       |> limit(^(command.limit + 1))
 
@@ -118,16 +118,23 @@ defmodule CcSpendingApi.Shared.Pagination do
   defp apply_cursor_conditions(query, nil, _sort), do: query
 
   defp apply_cursor_conditions(query, position, sort_fields) do
-    # Implement cursor conditions based on sort fields
-    # This would be the complex cursor logic from before
-    IO.inspect(sort_fields, label: "SORT FIELDS =========================")
-    query
+    conditions = build_cursor_filter(position, sort_fields)
+    where(query, ^conditions)
+  end
+
+  defp build_cursor_filter(position, sort_fields) do
+    Enum.reduce(sort_fields, dynamic(true), fn
+      {cursor_field, :asc}, acc ->
+        cursor_value = Map.get(position, cursor_field)
+        dynamic([t], ^acc and field(t, ^cursor_field) > ^cursor_value)
+
+      {cursor_field, :desc}, acc ->
+        cursor_value = Map.get(position, cursor_field)
+        dynamic([t], ^acc and field(t, ^cursor_field) < ^cursor_value)
+    end)
   end
 
   defp apply_ordering(query, sort_fields) do
-    IO.inspect(query)
-    IO.inspect(sort_fields, label: "***************************************************")
-
     Enum.reduce(sort_fields, query, fn {field, direction}, acc ->
       order_by(acc, [r], [{^direction, field(r, ^field)}])
     end)
