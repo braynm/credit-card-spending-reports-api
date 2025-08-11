@@ -122,16 +122,23 @@ defmodule CcSpendingApi.Shared.Pagination do
     where(query, ^conditions)
   end
 
+  # TODO: MAKE this fully dynamic (e.g. length, field type)
   defp build_cursor_filter(position, sort_fields) do
-    Enum.reduce(sort_fields, dynamic(true), fn
-      {cursor_field, :asc}, acc ->
-        cursor_value = Map.get(position, cursor_field)
-        dynamic([t], ^acc and field(t, ^cursor_field) > ^cursor_value)
+    [{f1, _}, {f2, _}] = sort_fields
 
-      {cursor_field, :desc}, acc ->
-        cursor_value = Map.get(position, cursor_field)
-        dynamic([t], ^acc and field(t, ^cursor_field) < ^cursor_value)
-    end)
+    [v1, v2] =
+      Enum.map(sort_fields, fn {field, _v} -> Map.fetch!(position, field) end)
+
+    dynamic(
+      [t],
+      fragment(
+        "(?, ?) < (?, ?)",
+        field(t, ^f1),
+        field(t, ^f2),
+        ^v1,
+        ^Ecto.UUID.dump!(v2)
+      )
+    )
   end
 
   defp apply_ordering(query, sort_fields) do

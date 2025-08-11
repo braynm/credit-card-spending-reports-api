@@ -26,13 +26,13 @@ defmodule CcSpendingApi.Shared.Pagination.Cursor do
   def validate(token, sort_fields) do
   end
 
-  defp serialize_value(%DateTime{} = dt), do: DateTime.to_iso8601(dt)
-  defp serialize_value(%NaiveDateTime{} = dt), do: NaiveDateTime.to_iso8601(dt)
-  defp serialize_value(%Decimal{} = decimal), do: Decimal.to_string(decimal)
-  defp serialize_value(uuid), do: Ecto.UUID.cast!(uuid)
-  defp serialize_value(value), do: value
+  def serialize_value(%DateTime{} = dt), do: DateTime.to_iso8601(dt)
+  def serialize_value(%NaiveDateTime{} = dt), do: NaiveDateTime.to_iso8601(dt)
+  def serialize_value(%Decimal{} = decimal), do: Decimal.to_string(decimal)
+  def serialize_value(uuid), do: Ecto.UUID.cast!(uuid)
+  def serialize_value(value), do: value
 
-  defp deserialize_position(position) do
+  def deserialize_position(position) do
     Map.new(position, fn {key, value} ->
       {String.to_atom(key), deserialize_value(value)}
     end)
