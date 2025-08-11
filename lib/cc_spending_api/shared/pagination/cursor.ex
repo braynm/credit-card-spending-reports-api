@@ -4,7 +4,7 @@ defmodule CcSpendingApi.Shared.Pagination.Cursor do
       sort_fields
       |> Enum.reduce(%{}, fn {field, _direction}, acc ->
         value = Map.get(last_record, field)
-        Map.put(acc, Ato.to_string(field), serialize_value(value))
+        Map.put(acc, Atom.to_string(field), serialize_value(value))
       end)
 
     position

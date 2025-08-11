@@ -5,13 +5,15 @@ defmodule CcSpendingApi.Statements.Application.Commands.ListUserTransaction do
     :sort,
     :filters,
     :limit,
-    :queryable
+    :queryable,
+    :user_id
   ]
 
   @type t :: %__MODULE__{
           cursor: String.t() | nil,
           sort: [{atom(), :asc | :desc}],
           filters: map(),
+          user_id: integer(),
           limit: pos_integer(),
           queryable: Ecto.Queryable.t()
         }
@@ -27,6 +29,7 @@ defmodule CcSpendingApi.Statements.Application.Commands.ListUserTransaction do
          user_id when not is_nil(user_id) <- validated_opts[:user_id] do
       command = %__MODULE__{
         cursor: validated_opts[:cursor],
+        user_id: validated_opts[:user_id],
         sort: validated_opts[:sort],
         filters: validated_opts[:filters],
         limit: validated_opts[:limit]

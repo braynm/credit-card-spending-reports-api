@@ -1,4 +1,4 @@
-defmodule CcSpendingApi.Statements.Domain.Services.ListUserTransaction do
+defmodule CcSpendingApi.Statements.Domain.Services.ListUserTransactionService do
   alias CcSpendingApi.Statements.Infra.EctoTransactionRepository
   alias CcSpendingApi.Shared.Result
 
@@ -6,7 +6,9 @@ defmodule CcSpendingApi.Statements.Domain.Services.ListUserTransaction do
     as: ListUserTransactionCommand
 
   def list_user_transaction(%ListUserTransactionCommand{} = command) do
-    command
+    with {:ok, queryable} <- build_base_query(command) do
+      queryable
+    end
   end
 
   defp build_base_query(%ListUserTransactionCommand{} = command) do

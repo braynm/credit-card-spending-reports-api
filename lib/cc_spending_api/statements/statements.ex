@@ -4,9 +4,9 @@ defmodule CcSpendingApi.Statements do
   alias CcSpendingApi.Statements.Domain.Services.StatementProcessingServices
 
   alias CcSpendingApi.Statements.Domain.Services.ListUserTransaction
+  alias CcSpendingApi.Statements.Application.Handlers.ListUserTransactionHandler
 
-  alias CcSpendingApi.Statements.Application.Commands.ListUserTransaction,
-    as: ListUserTransactionCommand
+  alias CcSpendingApi.Statements.Application.Commands.ListUserTransaction
 
   def upload_and_save_transactions_from_attachment(params, deps \\ default_deps())
 
@@ -16,11 +16,14 @@ defmodule CcSpendingApi.Statements do
     end
   end
 
-  def list_user_transaction(user_id, params \\ [], deps \\ [])
+  def list_user_transaction(user_id, params \\ [], deps \\ %{})
 
   def list_user_transaction(user_id, params, deps) do
     params = Keyword.put(params, :user_id, user_id)
-    ListUserTransactionCommand.new(params)
+
+    with {:ok, command} <- ListUserTransaction.new(params) do
+      ListUserTransactionHandler.handle(command)
+    end
   end
 
   defp default_deps, do: StatementProcessingServices.default()
