@@ -16,15 +16,11 @@ defmodule CcSpendingApiWeb.Plugs.ValidateGuardianSession do
   import Plug.Conn
   require Logger
 
-  alias Guardian.DB
-  alias CcSpendingApiWeb.Guardian
   alias CcSpendingApi.Authentication
 
   def init(opts), do: opts
 
-  def call(conn, opts) do
-    optional = Keyword.get(opts, :optional, false)
-
+  def call(conn, _opts) do
     case extract_from_authorization(conn) do
       token when is_binary(token) ->
         IO.inspect("TOKEN #{token}")

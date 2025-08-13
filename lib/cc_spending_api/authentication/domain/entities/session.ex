@@ -1,5 +1,5 @@
 defmodule CcSpendingApi.Authentication.Domain.Entities.Session do
-  alias CcSpendingApi.Shared.{Result, Errors}
+  alias CcSpendingApi.Shared.Result
 
   @type t :: %__MODULE__{
           # id: String.t() | nil,

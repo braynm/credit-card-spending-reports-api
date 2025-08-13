@@ -3,7 +3,6 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
   alias CcSpendingApi.Utils.ValidatorFormatter
 
   import Ecto.Changeset
-  alias Ecto.Changeset
 
   @type t :: %__MODULE__{
           user_id: integer(),
@@ -71,21 +70,21 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
       )
     end
 
+    defp validate_file_size(changeset, _), do: changeset
+
     defp validate_bank(%Ecto.Changeset{valid?: true, changes: changes} = changeset) do
-      if String.downcase(changes.bank) not in @supported_banks do
+      if String.downcase(changes.bank) in @supported_banks do
+        changeset
+      else
         add_error(
           changeset,
           :bank,
           "Unsupported bank. Please contact the admin to request bank support."
         )
-      else
-        changeset
       end
     end
 
     defp validate_bank(changeset), do: changeset
-
-    defp validate_file_size(changeset, _), do: changeset
 
     defp validate_file_type(changeset, %{filename: filename}) do
       extension = Path.extname(filename) |> String.downcase()

@@ -67,7 +67,8 @@ defmodule CcSpendingApi.MixProject do
       {:erlport, "~> 0.10.1"},
       {:money, "~> 1.14"},
       {:cloak_ecto, "~> 1.2"},
-      {:decimal, "~> 2.0"}
+      {:decimal, "~> 2.0"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 

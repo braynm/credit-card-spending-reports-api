@@ -1,12 +1,10 @@
 defmodule CcSpendingApi.Authentication.Infra.GuardianSessionRepository do
   @behaviour CcSpendingApi.Authentication.Domain.Repositories.SessionRepository
 
-  alias CcSpendingApi.Authentication.Domain.Entities.{User, Session}
-  alias CcSpendingApi.Authentication.Domain.ValueObjects.Email
+  alias CcSpendingApi.Authentication.Domain.Entities.Session
   alias CcSpendingApi.Authentication.Infra.EctoUserRepository
   alias CcSpendingApiWeb.Guardian, as: GuardianWeb
   alias CcSpendingApi.Shared.{Result, Errors}
-  alias Guardian.DB
   alias CcSpendingApi.Repo
 
   import Ecto.Query
@@ -43,7 +41,7 @@ defmodule CcSpendingApi.Authentication.Infra.GuardianSessionRepository do
       {:error, _reason} ->
         Result.error(%Errors.AuthenticationError{message: "Invalid session"})
 
-      error ->
+      _error ->
         Result.error(%Errors.AuthenticationError{message: "Session validation failed"})
     end
   end
@@ -56,13 +54,15 @@ defmodule CcSpendingApi.Authentication.Infra.GuardianSessionRepository do
   end
 
   def revoke_all_user_tokens(user_id) when is_binary(user_id) do
-    with {:ok, user} <- EctoUserRepository.get_by_id(user_id) do
-      case DB.revoke_all_tokens_for_user(user, GuardianWeb) do
-        :ok -> Result.ok(:ok)
-        {:error, reason} -> Result.error(reason)
-      end
-    else
-      error -> error
+    case EctoUserRepository.get_by_id(user_id) do
+      {:ok, user} ->
+        case Guardian.DB.revoke_all(%{aud: "web", sub: to_string(user.id)}) do
+          :ok -> Result.ok(:ok)
+          {:error, reason} -> Result.error(reason)
+        end
+
+      error ->
+        error
     end
   end
 
@@ -79,7 +79,7 @@ defmodule CcSpendingApi.Authentication.Infra.GuardianSessionRepository do
   end
 
   def cleanup_expired_tokens do
-    case DB.purge_expired_tokens(GuardianWeb) do
+    case Guardian.DB.Token.purge_expired_tokens() do
       {count, _} -> Result.ok(count)
       error -> Result.error(error)
     end

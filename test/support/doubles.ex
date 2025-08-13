@@ -2,19 +2,20 @@ defmodule CcSpendingApi.Test.Doubles do
   import Double
   alias Mix.Shell.IO
   alias CcSpendingApi.Repo
-  alias CcSpendingApi.Shared.{Result, Errors}
+  alias CcSpendingApi.Shared.{Result, Errors, Pagination}
   alias CcSpendingApi.Authentication.Domain.ValueObjects.{Password}
   alias CcSpendingApi.Authentication.Domain.Entities.{User, Session}
   alias CcSpendingApi.Statements.Domain.Services.StatementProcessingServices
   alias CcSpendingApi.Authentication.Domain.Repositories.{UserRepository, SessionRepository}
 
   alias CcSpendingApi.Statements.PdfExtractor
+  alias CcSpendingApi.Statements.Domain.Entities.Transaction
   alias CcSpendingApi.Statements.Domain.Services.FileProcessor
   alias CcSpendingApi.Statements.Infra.EctoTransactionRepository
-  alias CcSpendingApi.Statements.Infra.EctoTransactionMetaRepository
+  alias CcSpendingApi.Statements.Infra.Schemas.TransactionSchema
   alias CcSpendingApi.Statements.Domain.Services.DuplicateChecker
   alias CcSpendingApi.Statements.Domain.Services.SaveStatementService
-  alias CcSpendingApi.Statements.Domain.Entities.Transaction
+  alias CcSpendingApi.Statements.Infra.EctoTransactionMetaRepository
 
   def user_repository_double(overrides \\ []) do
     defaults = %{
@@ -107,6 +108,26 @@ defmodule CcSpendingApi.Test.Doubles do
       pdf_extractor: impl.pdf_extractor,
       save_statement_service: impl.save_statement_service,
       transaction_fn: impl.transaction_fn
+    }
+  end
+
+  def list_statement_txns_double(overrides \\ %{})
+
+  def list_statement_txns_double(overrides) do
+    defaults = %{
+      # pagination: Pagination |> stub(:paginate, fn _ -> pagination end),
+      txn_repository:
+        EctoTransactionRepository
+        |> stub(:list_user_transaction, fn _ -> TransactionSchema end)
+        |> stub(:all, fn _ ->
+          []
+        end)
+    }
+
+    impl = Map.merge(defaults, Map.new(overrides))
+
+    %{
+      txn_repository: impl.txn_repository
     }
   end
 

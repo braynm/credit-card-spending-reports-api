@@ -17,7 +17,6 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   """
 
   alias CcSpendingApi.Statements.Domain.ValueObjects.Amount
-  alias CcSpendingApi.Statements.Domain.Entities.Transaction
   @behaviour CcSpendingApi.Statements.Domain.BankParser
 
   # Markers used to identify the start and end of transaction data in RCBC statements
@@ -58,39 +57,14 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
 
   def parse(_), do: {:error, :malformed_extracted_text}
 
-  @doc """
-  Converts charlists to strings for all text elements.
-
-  This function is currently commented out in the main pipeline but may be needed
-  if the PDF extraction library returns charlists instead of strings.
-
-  ## Parameters
-  - extracted_texts: Nested list structure potentially containing charlists
-
-  ## Returns
-  - Same structure but with all charlists converted to strings
-  """
   defp charlist_to_sigil(extracted_texts) when is_list(extracted_texts) do
     Enum.map(extracted_texts, fn page ->
       Enum.map(page, fn row -> Enum.map(row, &to_string/1) end)
     end)
   end
 
-  defp charlist_to_sigil(extracted_texts), do: parse(nil)
+  defp charlist_to_sigil(_extracted_texts), do: parse(nil)
 
-  @doc """
-  Locates the page containing transaction data within the PDF.
-
-  RCBC statements may span multiple pages, but transactions are typically on
-  a specific page marked by the presence of "PREVIOUS STATEMENT BALANCE" row.
-
-  ## Parameters
-  - extracted_texts: List of pages (each page is a list of rows)
-
-  ## Returns
-  - Single page (list of rows) that contains the transaction data
-  - nil if no page contains the transaction start marker
-  """
   defp find_transaction_page(extracted_texts) when is_list(extracted_texts) do
     index =
       Enum.find_index(extracted_texts, fn page ->
@@ -104,64 +78,14 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
     end
   end
 
-  @doc """
-  Extracts the actual transaction rows from the page.
-
-  RCBC statements have transaction data between specific markers:
-  - Start: "PREVIOUS STATEMENT BALANCE" (skip 2 rows after this)
-  - End: "BALANCE END" (stop 1 row before this)
-
-  The 2-row offset after start marker accounts for:
-  1. Header row (e.g., "DATE", "DESCRIPTION", "AMOUNT")
-  2. Previous balance row
-
-  ## Parameters
-  - extracted_texts: Single page containing rows of transaction data
-
-  ## Returns
-  - List of raw transaction rows (each row is a list of tokens)
-  """
   defp find_transaction_list(extracted_texts) when is_list(extracted_texts) do
     start_marker = Enum.find_index(extracted_texts, &(&1 == @txn_start_marker)) + 2
     end_marker = Enum.find_index(extracted_texts, &(&1 == @txn_end_marker)) - 1
 
-    result = Enum.slice(extracted_texts, start_marker, end_marker - start_marker)
+    Enum.slice(extracted_texts, start_marker, end_marker - start_marker)
   end
 
   defp find_transaction_list(_), do: parse(nil)
-
-  @doc """
-  Transforms raw transaction rows into structured transaction maps.
-
-  Each raw transaction row from RCBC follows this format:
-  [sale_date, post_date, description_word1, description_word2, ..., amount]
-
-  This function:
-  1. Extracts the first two elements as dates
-  2. Joins all middle elements as the description
-  3. Takes the last element as the amount
-  4. Normalizes the amount format
-
-  ## Parameters
-  - result: List of raw transaction rows
-
-  ## Returns
-  - List of transaction maps with standardized structure
-  """
-  defp normalize_row(result) do
-    Enum.map(result, fn txn ->
-      [sale_date, post_date | rest] = txn
-      {desc, [amt]} = Enum.split(rest, -1)
-
-      # TODO: convert to txn value object
-      %{
-        sale_date: to_iso8601(sale_date),
-        posted_date: to_iso8601(post_date),
-        encrypted_details: Enum.join(desc, " "),
-        encrypted_amount: normalize_amt(amt)
-      }
-    end)
-  end
 
   defp normalize_and_to_transaction(result) when is_list(result) do
     Enum.map(result, fn txn ->
@@ -178,29 +102,8 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
     end)
   end
 
-  defp normalize_and_to_transaction(result), do: parse(nil)
+  defp normalize_and_to_transaction(_result), do: parse(nil)
 
-  @doc """
-  Normalizes RCBC amount format to standard decimal representation.
-
-  RCBC uses a trailing dash "-" to indicate negative amounts (debits) instead
-  of a leading negative sign. This function converts:
-  - "1,234.56-" → "-1,234.56" (debit/charge)
-  - "1,234.56"  → "1,234.56"  (credit/payment - rare in CC statements)
-
-  ## Parameters
-  - amt: Raw amount string from RCBC statement
-
-  ## Returns
-  - Normalized amount string with standard negative sign placement
-
-  ## Examples
-      iex> normalize_amt("1,234.56-")
-      "-1,234.56"
-      
-      iex> normalize_amt("500.00")
-      "500.00"
-  """
   defp normalize_amt(amt) do
     amt = String.trim(amt)
 
@@ -226,4 +129,7 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
     {:ok, datetime} = DateTime.new(date, ~T[00:00:00], "Etc/UTC")
     datetime
   end
+
+  def validate_format("rcbc"), do: false
+  def supported_bank, do: "rcbc"
 end

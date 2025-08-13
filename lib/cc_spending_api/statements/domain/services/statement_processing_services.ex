@@ -1,4 +1,5 @@
 defmodule CcSpendingApi.Statements.Domain.Services.StatementProcessingServices do
+  alias CcSpendingApi.Shared.Pagination
   alias CcSpendingApi.Statements.PdfExtractor
   alias CcSpendingApi.Statements.Domain.Services.FileProcessor
   alias CcSpendingApi.Statements.Infra.EctoTransactionRepository
@@ -13,7 +14,8 @@ defmodule CcSpendingApi.Statements.Domain.Services.StatementProcessingServices d
     :save_statement_service,
     :txn_repository,
     :txn_meta_repository,
-    :transaction_fn
+    :transaction_fn,
+    :pagination
   ]
 
   def default do
@@ -24,6 +26,7 @@ defmodule CcSpendingApi.Statements.Domain.Services.StatementProcessingServices d
       save_statement_service: SaveStatementService,
       txn_repository: EctoTransactionRepository,
       txn_meta_repository: EctoTransactionMetaRepository,
+      pagination: Pagination,
       transaction_fn: nil
     }
   end

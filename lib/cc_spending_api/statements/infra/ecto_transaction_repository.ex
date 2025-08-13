@@ -3,7 +3,6 @@ defmodule CcSpendingApi.Statements.Infra.EctoTransactionRepository do
 
   import Ecto.Query
   alias CcSpendingApi.Repo
-  alias CcSpendingApi.Shared.Result
   alias CcSpendingApi.Statements.Domain.Entities.Transaction
   alias CcSpendingApi.Statements.Infra.Schemas.TransactionSchema
 
@@ -23,5 +22,16 @@ defmodule CcSpendingApi.Statements.Infra.EctoTransactionRepository do
     IO.inspect(params)
     # {:ok, txn} = Transaction.from_schema(schema)
     params
+  end
+
+  @spec list_user_transaction(integer()) :: Ecto.Queryable.t()
+  def list_user_transaction(user_id) do
+    from t in TransactionSchema,
+      where: t.user_id == ^user_id
+  end
+
+  @spec all(Ecto.Queryable.t()) :: [any()]
+  def all(queryable) do
+    Repo.all(queryable)
   end
 end

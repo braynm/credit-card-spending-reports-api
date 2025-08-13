@@ -1,9 +1,7 @@
 defmodule CcSpendingApi.Statements.Infra.EctoTransactionMetaRepository do
   @behaviour CcSpendingApi.Statements.Domain.TransactionRepo
 
-  import Ecto.Query
   alias CcSpendingApi.Repo
-  alias CcSpendingApi.Shared.Result
   alias CcSpendingApi.Statements.Infra.Schemas.TransactionMetaSchema
 
   def create_batch_transaction(txn_metas) do

@@ -42,6 +42,8 @@ defmodule CcSpendingApi.Statements.Domain.ValueObjects.Amount do
     {:ok, %__MODULE__{amount: storage_value}}
   end
 
+  def new(_), do: {:error, :invalid_amount}
+
   # returns an unformatted and normalized value e.g. (12050 -> 120.50)
   def from_db(amount) when is_binary(amount) do
     amount =
@@ -52,8 +54,6 @@ defmodule CcSpendingApi.Statements.Domain.ValueObjects.Amount do
 
     {:ok, amount}
   end
-
-  def new(_), do: {:error, :invalid_amount}
 
   defp mult_by_100(%Decimal{} = amount) do
     Decimal.mult(amount, 100) |> Decimal.round()

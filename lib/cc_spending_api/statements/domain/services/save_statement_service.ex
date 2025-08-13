@@ -1,11 +1,9 @@
 defmodule CcSpendingApi.Statements.Domain.Services.SaveStatementService do
-  alias CcSpendingApi.Shared.{Result, Errors}
   alias CcSpendingApi.Statements.Infra.EctoTransactionRepository
   alias CcSpendingApi.Statements.Infra.EctoTransactionMetaRepository
   alias CcSpendingApi.Statements.Infra.EctoCardStatementRepository
   alias CcSpendingApi.Statements.Domain.ValueObjects.FileChecksum
   alias CcSpendingApi.Statements.Domain.Entities.CardStatement
-  alias CcSpendingApi.Statements.Domain.Entities.StatementMeta
   alias CcSpendingApi.Statements.Domain.Entities.Transaction
   alias CcSpendingApi.Statements.Domain.Entities.TransactionMeta
 
@@ -21,9 +19,8 @@ defmodule CcSpendingApi.Statements.Domain.Services.SaveStatementService do
 
     with {:ok, statement_entity} <- CardStatement.new(card_stmt),
          {:ok, inserted_stmt} <- save_statement(statement_entity),
-         {:ok, batch_txns} <- map_batch_txns(user_id, inserted_stmt.id, txns),
-         {:ok, inserted_txns} <- batch_insert_txns(batch_txns) do
-      {:ok, inserted_txns}
+         {:ok, batch_txns} <- map_batch_txns(user_id, inserted_stmt.id, txns) do
+      batch_insert_txns(batch_txns)
     end
   end
 

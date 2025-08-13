@@ -33,7 +33,7 @@ defmodule CcSpendingApi.EncryptedTypes do
     end
 
     def load(value) do
-      {:ok, amt} = Amount.from_db(value)
+      Amount.from_db(value)
     end
   end
 end
