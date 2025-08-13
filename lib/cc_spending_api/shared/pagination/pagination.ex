@@ -5,6 +5,7 @@ defmodule CcSpendingApi.Shared.Pagination do
   alias CcSpendingApi.Shared.Result
   alias CcSpendingApi.Shared.Pagination.Cursor
   alias CcSpendingApi.Shared.Pagination.Metadata
+  alias CcSpendingApi.Statements.Infra.EctoTransactionRepository
 
   defmodule PaginationParams do
     @enforce_keys [:queryable]
@@ -69,10 +70,11 @@ defmodule CcSpendingApi.Shared.Pagination do
     defp validate_filters(_), do: {:error, :invalid_filters}
   end
 
-  def paginate(%PaginationParams{} = command) do
+  def paginate(%PaginationParams{} = command, deps \\ paginate_deps()) do
     with {:ok, cursor_position} <- Cursor.decode(command.cursor),
          {:ok, query} <- paginate_query(command, cursor_position),
-         result <- Repo.all(query),
+         result <-
+           deps.txn_repository.all(query),
          {:ok, entries, metadata} <-
            build_result(result, command) do
       {:ok,
@@ -81,6 +83,12 @@ defmodule CcSpendingApi.Shared.Pagination do
          metadata: metadata
        }}
     end
+  end
+
+  defp paginate_deps do
+    %{
+      txn_repository: EctoTransactionRepository
+    }
   end
 
   defp build_result(records, command) do
@@ -125,20 +133,34 @@ defmodule CcSpendingApi.Shared.Pagination do
   # TODO: MAKE this fully dynamic (e.g. length, field type)
   defp build_cursor_filter(position, sort_fields) do
     [{f1, _}, {f2, _}] = sort_fields
+    [v1, v2] = Enum.map(sort_fields, fn {field, _v} -> Map.fetch!(position, field) end)
+    {_, direction} = List.first(sort_fields)
 
-    [v1, v2] =
-      Enum.map(sort_fields, fn {field, _v} -> Map.fetch!(position, field) end)
+    case direction do
+      :desc ->
+        dynamic(
+          [t],
+          fragment(
+            "(?, ?) < (?, ?)",
+            field(t, ^f1),
+            field(t, ^f2),
+            ^v1,
+            ^Ecto.UUID.dump!(v2)
+          )
+        )
 
-    dynamic(
-      [t],
-      fragment(
-        "(?, ?) < (?, ?)",
-        field(t, ^f1),
-        field(t, ^f2),
-        ^v1,
-        ^Ecto.UUID.dump!(v2)
-      )
-    )
+      :asc ->
+        dynamic(
+          [t],
+          fragment(
+            "(?, ?) < (?, ?)",
+            field(t, ^f1),
+            field(t, ^f2),
+            ^v1,
+            ^Ecto.UUID.dump!(v2)
+          )
+        )
+    end
   end
 
   defp apply_ordering(query, sort_fields) do

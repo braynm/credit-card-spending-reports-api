@@ -1,4 +1,4 @@
-defmodule CcSpendingApi.CcSpendingApi.StatementsTest do
+defmodule CcSpendingApi.CcSpendingApi.UploadStatementsTest do
   use ExUnit.Case, async: true
 
   import Double
@@ -7,12 +7,7 @@ defmodule CcSpendingApi.CcSpendingApi.StatementsTest do
   alias CcSpendingApi.Statements
   alias CcSpendingApi.Test.Doubles
 
-  alias CcSpendingApi.Shared.{Result, Errors}
-
   alias CcSpendingApi.Statements.Domain.Entities.Transaction
-  alias CcSpendingApi.Statements.Application.Commands.UploadStatementTransaction
-  alias CcSpendingApi.Statements.Domain.Services.StatementProcessingServices
-
   alias CcSpendingApi.Statements.PdfExtractor
   alias CcSpendingApi.Statements.Domain.Services.DuplicateChecker
 

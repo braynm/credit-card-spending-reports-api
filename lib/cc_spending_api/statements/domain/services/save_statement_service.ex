@@ -21,9 +21,8 @@ defmodule CcSpendingApi.Statements.Domain.Services.SaveStatementService do
 
     with {:ok, statement_entity} <- CardStatement.new(card_stmt),
          {:ok, inserted_stmt} <- save_statement(statement_entity),
-         {:ok, batch_txns} <- map_batch_txns(user_id, inserted_stmt.id, txns),
-         {:ok, inserted_txns} <- batch_insert_txns(batch_txns) do
-      {:ok, inserted_txns}
+         {:ok, batch_txns} <- map_batch_txns(user_id, inserted_stmt.id, txns) do
+      batch_insert_txns(batch_txns)
     end
   end
 

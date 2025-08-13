@@ -8,7 +8,7 @@ defmodule CcSpendingApi.Statements do
 
   alias CcSpendingApi.Statements.Application.Commands.ListUserTransaction
 
-  def upload_and_save_transactions_from_attachment(params, deps \\ default_deps())
+  def upload_and_save_transactions_from_attachment(params, deps \\ statement_process_deps())
 
   def upload_and_save_transactions_from_attachment(params, deps) do
     with {:ok, command} <- UploadStatementTransaction.new(params) do
@@ -16,15 +16,24 @@ defmodule CcSpendingApi.Statements do
     end
   end
 
-  def list_user_transaction(user_id, params \\ [], deps \\ %{})
+  def list_user_transaction(user_id, params \\ [], deps \\ list_txns_deps())
 
   def list_user_transaction(user_id, params, deps) do
     params = Keyword.put(params, :user_id, user_id)
 
     with {:ok, command} <- ListUserTransaction.new(params) do
-      ListUserTransactionHandler.handle(command)
+      ListUserTransactionHandler.handle(command, deps)
     end
   end
 
-  defp default_deps, do: StatementProcessingServices.default()
+  defp statement_process_deps, do: StatementProcessingServices.default()
+
+  defp list_txns_deps do
+    %StatementProcessingServices{
+      txn_repository: txn_repository
+      # pagination: pagination
+    } = statement_process_deps()
+
+    %{txn_repository: txn_repository}
+  end
 end

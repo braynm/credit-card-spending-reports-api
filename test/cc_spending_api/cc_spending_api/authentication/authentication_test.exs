@@ -8,7 +8,6 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
   alias CcSpendingApi.Shared.{Result, Errors}
   alias CcSpendingApi.Authentication.Domain.Entities.{User, Session}
   alias CcSpendingApi.Authentication.Domain.ValueObjects.{Email, Password}
-  alias CcSpendingApi.Authentication.Domain.ValueObjects.AuthenticatedUser
   alias CcSpendingApi.Authentication.Domain.ValueObjects.RegisteredUser
 
   @tag :authentication
@@ -100,7 +99,7 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
     test "successfully validates token" do
       session_repo =
         Doubles.session_repository_double(
-          validate_token: fn token ->
+          validate_token: fn _token ->
             Result.ok(%CcSpendingApi.Authentication.Domain.Entities.Session{
               user_id: "test-user-id",
               jti: "test-jti",
@@ -149,7 +148,7 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
     test "fail validates token" do
       session_repo =
         Doubles.session_repository_double(
-          validate_token: fn token ->
+          validate_token: fn _token ->
             Result.error(%Errors.AuthenticationError{message: "Invalid session"})
           end
         )
@@ -180,6 +179,6 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
 
   defp hash_pw(password) when is_binary(password) do
     {:ok, pw} = Password.new(password)
-    hash = Password.hash(pw)
+    Password.hash(pw)
   end
 end

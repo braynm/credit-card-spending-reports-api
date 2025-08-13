@@ -3,7 +3,6 @@ defmodule CcSpendingApi.Statements.Infra.EctoCardStatementRepository do
 
   import Ecto.Query
   alias CcSpendingApi.Repo
-  alias CcSpendingApi.Shared.{Result, Errors}
   alias CcSpendingApi.Utils.ValidatorFormatter
   alias CcSpendingApi.Statements.Domain.Entities.CardStatement
   alias CcSpendingApi.Statements.Infra.Schemas.CardStatementSchema

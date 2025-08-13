@@ -4,9 +4,8 @@ defmodule CcSpendingApi.Authentication.Domain.Services.UserRegistrationService d
 
   def register_user(email, password, deps) do
     with :ok <- check_email_availability(email, deps),
-         {:ok, user} <- create_user(email, password),
-         {:ok, saved_user} <- save_user(user, deps) do
-      {:ok, saved_user}
+         {:ok, user} <- create_user(email, password) do
+      save_user(user, deps)
     end
   end
 

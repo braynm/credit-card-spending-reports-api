@@ -72,9 +72,10 @@ defmodule CcSpendingApi.Authentication do
     params = %{email: email, password: password}
     deps = deps || default_deps()
 
-    with {:ok, command} <- RegisterUser.new(params) do
-      RegisterUserHandler.handle(command, deps)
-    else
+    case RegisterUser.new(params) do
+      {:ok, command} ->
+        RegisterUserHandler.handle(command, deps)
+
       {:error, %Ecto.Changeset{} = error} ->
         {:error, error}
 
@@ -109,14 +110,15 @@ defmodule CcSpendingApi.Authentication do
   def login(email, password, audience \\ "web", deps \\ nil) do
     deps = deps || default_deps()
 
-    with {:ok, command} <- LoginUser.new(%{email: email, password: password}) do
-      LoginUserHandler.handle(command, deps)
-    else
+    case LoginUser.new(%{email: email, password: password}) do
+      {:ok, command} ->
+        LoginUserHandler.handle(command, deps)
+
       {:error, %Ecto.Changeset{} = error} ->
         {:error, error}
 
       error ->
-        IO.inspect(error)
+        error
     end
   end
 

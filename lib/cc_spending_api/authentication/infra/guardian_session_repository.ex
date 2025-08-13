@@ -56,13 +56,15 @@ defmodule CcSpendingApi.Authentication.Infra.GuardianSessionRepository do
   end
 
   def revoke_all_user_tokens(user_id) when is_binary(user_id) do
-    with {:ok, user} <- EctoUserRepository.get_by_id(user_id) do
-      case DB.revoke_all_tokens_for_user(user, GuardianWeb) do
-        :ok -> Result.ok(:ok)
-        {:error, reason} -> Result.error(reason)
-      end
-    else
-      error -> error
+    case EctoUserRepository.get_by_id(user_id) do
+      {:ok, user} ->
+        case DB.revoke_all_tokens_for_user(user, GuardianWeb) do
+          :ok -> Result.ok(:ok)
+          {:error, reason} -> Result.error(reason)
+        end
+
+      error ->
+        error
     end
   end
 

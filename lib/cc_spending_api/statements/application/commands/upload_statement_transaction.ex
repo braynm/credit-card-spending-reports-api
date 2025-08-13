@@ -72,14 +72,14 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
     end
 
     defp validate_bank(%Ecto.Changeset{valid?: true, changes: changes} = changeset) do
-      if String.downcase(changes.bank) not in @supported_banks do
+      if String.downcase(changes.bank) in @supported_banks do
+        changeset
+      else
         add_error(
           changeset,
           :bank,
           "Unsupported bank. Please contact the admin to request bank support."
         )
-      else
-        changeset
       end
     end
 

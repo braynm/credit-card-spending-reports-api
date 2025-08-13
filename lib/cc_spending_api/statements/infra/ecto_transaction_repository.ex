@@ -30,4 +30,9 @@ defmodule CcSpendingApi.Statements.Infra.EctoTransactionRepository do
     from t in TransactionSchema,
       where: t.user_id == ^user_id
   end
+
+  @spec all(Ecto.Queryable.t()) :: [any()]
+  def all(queryable) do
+    Repo.all(queryable)
+  end
 end
