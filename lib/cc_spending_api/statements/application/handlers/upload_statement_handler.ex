@@ -1,12 +1,6 @@
 defmodule CcSpendingApi.Statements.Application.Handlers.UploadStatementHandler do
   alias CcSpendingApi.Repo
-  alias CcSpendingApi.Statements.Domain.CardStatementRepo
-  alias CcSpendingApi.Statements.Domain.TransactionRepo
-  alias CcSpendingApi.Statements.PdfExtractor
   alias CcSpendingApi.Statements.Infra.Parsers.RcbcParser
-  alias CcSpendingApi.Statements.Domain.Services.FileProcessor
-  alias CcSpendingApi.Statements.Domain.Services.DuplicateChecker
-  alias CcSpendingApi.Statements.Domain.Services.SaveStatementService
   alias CcSpendingApi.Statements.Domain.ValueObjects.FileChecksum
   alias CcSpendingApi.Statements.Domain.Services.StatementProcessingServices
   alias CcSpendingApi.Statements.Application.Commands.UploadStatementTransaction
@@ -23,8 +17,6 @@ defmodule CcSpendingApi.Statements.Application.Handlers.UploadStatementHandler d
       duplicate_checker: duplicate_checker,
       pdf_extractor: pdf_extractor,
       save_statement_service: save_statement_service,
-      txn_repository: txn_repository,
-      txn_meta_repository: txn_meta_repository,
       transaction_fn: transaction_fn
     } = deps
 

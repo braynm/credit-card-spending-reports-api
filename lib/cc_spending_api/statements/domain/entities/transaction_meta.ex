@@ -5,7 +5,6 @@ defmodule CcSpendingApi.Statements.Domain.Entities.TransactionMeta do
 
   alias CcSpendingApi.Shared.Result
   alias CcSpendingApi.Statements.Domain.ValueObjects.Amount
-  alias CcSpendingApi.Statements.Domain.Entities.Transaction
 
   @type t :: %__MODULE__{
           id: String.t() | nil,

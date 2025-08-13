@@ -8,8 +8,6 @@ defmodule CcSpendingApi.Authentication do
   """
 
   alias CcSpendingApi.Authentication.Domain.Entities.{User, Session}
-  alias CcSpendingApi.Authentication.Domain.ValueObjects.AuthenticatedUser
-  alias CcSpendingApi.Authentication.Domain.ValueObjects.RegisteredUser
   alias CcSpendingApi.Shared.Result
 
   alias CcSpendingApi.Authentication.Application.Commands.{
@@ -68,7 +66,7 @@ defmodule CcSpendingApi.Authentication do
   """
 
   @spec register(String.t(), String.t(), audience(), map()) :: auth_result()
-  def register(email, password, audience \\ "web", deps \\ nil) do
+  def register(email, password, _audience \\ "web", deps \\ nil) do
     params = %{email: email, password: password}
     deps = deps || default_deps()
 
@@ -107,7 +105,7 @@ defmodule CcSpendingApi.Authentication do
       {:error, %Ecto.Changeset{invalid? true, ...}}
   """
   @spec login(String.t(), String.t(), audience(), map()) :: auth_result()
-  def login(email, password, audience \\ "web", deps \\ nil) do
+  def login(email, password, _audience \\ "web", deps \\ nil) do
     deps = deps || default_deps()
 
     case LoginUser.new(%{email: email, password: password}) do

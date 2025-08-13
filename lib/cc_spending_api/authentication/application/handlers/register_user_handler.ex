@@ -1,6 +1,5 @@
 defmodule CcSpendingApi.Authentication.Application.Handlers.RegisterUserHandler do
   alias CcSpendingApi.Shared.{Result, Errors}
-  alias CcSpendingApi.Authentication.Domain.Entities.User
   alias CcSpendingApi.Authentication.Application.Commands.RegisterUser
   alias CcSpendingApi.Authentication.Domain.Repositories.UserRepository
   alias CcSpendingApi.Authentication.Domain.Services.AuthenticationService

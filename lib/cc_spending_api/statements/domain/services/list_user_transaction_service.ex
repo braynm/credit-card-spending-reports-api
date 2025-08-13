@@ -1,5 +1,4 @@
 defmodule CcSpendingApi.Statements.Domain.Services.ListUserTransactionService do
-  alias CcSpendingApi.Statements.Infra.EctoTransactionRepository
   alias CcSpendingApi.Shared.Result
 
   alias CcSpendingApi.Statements.Application.Commands.ListUserTransaction,

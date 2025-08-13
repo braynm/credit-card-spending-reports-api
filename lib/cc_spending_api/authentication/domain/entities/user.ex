@@ -3,7 +3,6 @@ defmodule CcSpendingApi.Authentication.Domain.Entities.User do
   alias CcSpendingApi.Authentication.Domain.ValueObjects.Password
 
   alias CcSpendingApi.Shared.Result
-  alias CcSpendingApi.Shared.Errors
 
   @type t :: %__MODULE__{
           id: String.t() | nil,

@@ -1,6 +1,5 @@
 defmodule CcSpendingApi.Shared.Pagination do
   import Ecto.Query
-  alias CcSpendingApi.Repo
 
   alias CcSpendingApi.Shared.Result
   alias CcSpendingApi.Shared.Pagination.Cursor
@@ -115,13 +114,13 @@ defmodule CcSpendingApi.Shared.Pagination do
     Result.ok(query)
   end
 
-  defp apply_filters(query, filters) when filters == %{}, do: query
+  # defp apply_filters(query, filters) when filters == %{}, do: query
 
-  defp apply_filters(query, filters) do
-    Enum.reduce(filters, query, fn {field, value}, acc ->
-      where(acc, [r], field(r, ^field) == ^value)
-    end)
-  end
+  # defp apply_filters(query, filters) do
+  #   Enum.reduce(filters, query, fn {field, value}, acc ->
+  #     where(acc, [r], field(r, ^field) == ^value)
+  #   end)
+  # end
 
   defp apply_cursor_conditions(query, nil, _sort), do: query
 

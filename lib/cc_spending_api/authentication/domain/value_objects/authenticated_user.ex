@@ -1,6 +1,4 @@
 defmodule CcSpendingApi.Authentication.Domain.ValueObjects.AuthenticatedUser do
-  alias CcSpendingApi.Shared.Result
-  alias CcSpendingApi.Shared.Errors
   alias CcSpendingApi.Authentication.Domain.Entities.User
 
   @type t :: %__MODULE__{id: integer(), email: String.t()}

@@ -1,6 +1,5 @@
 defmodule CcSpendingApi.Authentication.Domain.Services.SessionCleanupService do
   alias CcSpendingApi.Authentication.Domain.Repositories.SessionRepository
-  alias CcSpendingApi.Shared.Result
 
   @type deps :: %{session_repository: SessionRepository.t()}
 

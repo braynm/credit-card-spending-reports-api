@@ -23,9 +23,6 @@ defmodule CcSpendingApi.Shared.Pagination.Cursor do
     end
   end
 
-  def validate(token, sort_fields) do
-  end
-
   def serialize_value(%DateTime{} = dt), do: DateTime.to_iso8601(dt)
   def serialize_value(%NaiveDateTime{} = dt), do: NaiveDateTime.to_iso8601(dt)
   def serialize_value(%Decimal{} = decimal), do: Decimal.to_string(decimal)

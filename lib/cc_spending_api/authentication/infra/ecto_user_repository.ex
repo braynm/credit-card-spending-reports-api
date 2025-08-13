@@ -1,11 +1,10 @@
 defmodule CcSpendingApi.Authentication.Infra.EctoUserRepository do
-  @behaviour CreditCardApi.Authentication.Domain.Repositories.UserRepository
+  @behaviour CcSpendingApi.Authentication.Domain.Repositories.UserRepository
 
   import Ecto.Query
   alias CcSpendingApi.Repo
   alias CcSpendingApi.Shared.{Result, Errors}
   alias CcSpendingApi.Authentication.Domain.Entities.User
-  alias CcSpendingApi.Authentication.Domain.ValueObjects.Email
   alias CcSpendingApi.Authentication.Infra.Schemas.UserSchema
   alias CcSpendingApi.Authentication.Infra.Schemas.UserSchema
 
@@ -53,7 +52,7 @@ defmodule CcSpendingApi.Authentication.Infra.EctoUserRepository do
   end
 
   defp changeset_to_error(%Ecto.Changeset{errors: errors}) do
-    {field, {message, _}} = List.first(errors)
+    {_field, {message, _}} = List.first(errors)
     %Errors.ValidationError{message: message}
   end
 end

@@ -86,7 +86,7 @@ defmodule CcSpendingApiWeb.AuthController do
         |> put_status(:ok)
         |> json(%{message: "Successfully logged out"})
 
-      {:error, error} ->
+      {:error, _error} ->
         conn
         |> put_status(400)
         |> json(%{error: "Something went wrong, Please try again later."})

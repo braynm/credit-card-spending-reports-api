@@ -1,8 +1,9 @@
 defmodule CcSpendingApi.Authentication.Infra.GuardianCleanupWorker do
   use GenServer
-
   alias CcSpendingApi.Authentication.Domain.Services.SessionCleanupService
   alias CcSpendingApi.Authentication.Infrastructure.Repositories.GuardianSessionRepository
+
+  require Logger
 
   # Run every 6 hours
   @cleanup_interval :timer.hours(6)

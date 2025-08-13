@@ -3,7 +3,6 @@ defmodule CcSpendingApi.Statements.Infra.EctoTransactionRepository do
 
   import Ecto.Query
   alias CcSpendingApi.Repo
-  alias CcSpendingApi.Shared.Result
   alias CcSpendingApi.Statements.Domain.Entities.Transaction
   alias CcSpendingApi.Statements.Infra.Schemas.TransactionSchema
 

@@ -1,8 +1,6 @@
 defmodule CcSpendingApi.Statements.PdfExtractor do
   use GenServer
 
-  alias :python, as: Py
-
   @python_module :pdf_extractor
 
   def start_link(_opts) do
