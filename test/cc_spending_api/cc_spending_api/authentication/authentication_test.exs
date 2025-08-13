@@ -8,7 +8,7 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
   alias CcSpendingApi.Shared.{Result, Errors}
   alias CcSpendingApi.Authentication.Domain.Entities.{User, Session}
   alias CcSpendingApi.Authentication.Domain.ValueObjects.{Email, Password}
-  alias CcSpendingApi.Authentication.Domain.ValueObjects.RegisteredUser
+  alias CcSpendingApi.Authentication.Domain.Dtos.RegisteredUser
 
   @tag :authentication
   describe "Authentication.register/4" do
@@ -73,7 +73,7 @@ defmodule CcSpendingApi.CcSpendingApi.Authentication.AuthenticationTest do
                       user_id: "test-id",
                       updated_at: nil
                     }, "test-token"},
-                 user: %CcSpendingApi.Authentication.Domain.ValueObjects.AuthenticatedUser{
+                 user: %CcSpendingApi.Authentication.Domain.Dtos.AuthenticatedUser{
                    email: "test@example.com",
                    id: "test-id"
                  }

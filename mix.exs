@@ -68,6 +68,7 @@ defmodule CcSpendingApi.MixProject do
       {:money, "~> 1.14"},
       {:cloak_ecto, "~> 1.2"},
       {:decimal, "~> 2.0"},
+      {:tzdata, "~> 1.1"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end

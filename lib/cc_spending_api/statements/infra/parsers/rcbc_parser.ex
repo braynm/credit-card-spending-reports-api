@@ -16,6 +16,7 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   ]
   """
 
+  alias CcSpendingApi.Utils.DateTimezone
   alias CcSpendingApi.Statements.Domain.ValueObjects.Amount
   @behaviour CcSpendingApi.Statements.Domain.BankParser
 
@@ -94,8 +95,8 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
 
       # TODO: convert to txn value object
       %{
-        sale_date: to_iso8601(sale_date),
-        posted_date: to_iso8601(post_date),
+        sale_date: to_utc_datetime(sale_date),
+        posted_date: to_utc_datetime(post_date),
         encrypted_details: Enum.join(desc, " "),
         encrypted_amount: normalize_amt(amt)
       }
@@ -119,15 +120,22 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
     amt
   end
 
-  def to_iso8601(date_str) do
+  # def to_iso8601(date_str) do
+  #   [mm, dd, yy] = String.split(date_str, "/")
+  #   full_year = "20" <> yy
+  #
+  #   {:ok, date} =
+  #     Date.new(String.to_integer(full_year), String.to_integer(mm), String.to_integer(dd))
+  #
+  #   {:ok, datetime} = DateTime.new(date, ~T[00:00:00], "Etc/UTC")
+  #   datetime
+  # end
+
+  def to_utc_datetime(date_str) do
     [mm, dd, yy] = String.split(date_str, "/")
     full_year = "20" <> yy
 
-    {:ok, date} =
-      Date.new(String.to_integer(full_year), String.to_integer(mm), String.to_integer(dd))
-
-    {:ok, datetime} = DateTime.new(date, ~T[00:00:00], "Etc/UTC")
-    datetime
+    DateTimezone.from_pdf("#{full_year}-#{mm}-#{dd} 00:00:00")
   end
 
   def validate_format("rcbc"), do: false

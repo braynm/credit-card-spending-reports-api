@@ -3,7 +3,34 @@ defmodule CcSpendingApiWeb.StatementsController do
 
   alias CcSpendingApi.Statements
 
+  def list_txns(conn, params) do
+    user = Guardian.Plug.current_resource(conn)
+
+    # convert map to keyword list with atom keys 
+    params = Enum.map(Map.to_list(params), fn {k, v} -> {String.to_atom(k), v} end)
+
+    case Statements.list_user_transaction(user.id, params) do
+      {:ok, %{metadata: metadata, entries: entries}} ->
+        json(conn, %{
+          success: true,
+          metadata: Map.from_struct(metadata),
+          entries: Enum.map(entries, &Map.from_struct/1)
+        })
+
+      {:error, :invalid_cursor} ->
+        conn
+        |> put_status(400)
+        |> json(%{
+          success: false,
+          error: "Invalid paginated page"
+        })
+    end
+  end
+
   def upload(conn, params) do
+    user = Guardian.Plug.current_resource(conn)
+    params = Map.put(params, "user_id", user.id)
+
     # TODO: Standardize structure of errors
     case Statements.upload_and_save_transactions_from_attachment(params) do
       {:ok, data} ->
