@@ -47,7 +47,12 @@ defmodule CcSpendingApi.Statements.Application.Commands.ListUserTransaction do
     user_id = Keyword.get(opts, :user_id)
     sort = Keyword.get(opts, :sort, @default_sort)
     filters = Keyword.get(opts, :filters, %{})
-    limit = min(Keyword.get(opts, :limit, @default_limit), @max_limit)
+
+    limit =
+      min(
+        Keyword.get(opts, :limit, Integer.to_string(@default_limit)) |> String.to_integer(),
+        @max_limit
+      )
 
     with :ok <- validate_sort(sort),
          :ok <- validate_filters(filters),

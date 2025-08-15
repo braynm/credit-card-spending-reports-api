@@ -1,7 +1,7 @@
 defmodule CcSpendingApi.Authentication.Application.Handlers.LoginUserHandler do
   alias CcSpendingApi.Authentication.Application.Commands.LoginUser
   alias CcSpendingApi.Authentication.Domain.Services.AuthenticationService
-  alias CcSpendingApi.Authentication.Domain.ValueObjects.AuthenticatedUser
+  alias CcSpendingApi.Authentication.Domain.Dtos.AuthenticatedUser
   alias CcSpendingApi.Shared.Result
 
   @type deps :: %{

@@ -23,14 +23,9 @@ defmodule CcSpendingApiWeb.Plugs.ValidateGuardianSession do
   def call(conn, _opts) do
     case extract_from_authorization(conn) do
       token when is_binary(token) ->
-        IO.inspect("TOKEN #{token}")
-
         # Token is present, validate it
-        res = Authentication.validate_session(token)
-        IO.inspect(res)
+        Authentication.validate_session(token)
         conn
-
-      # IO.inspect(Authentication.validate_session(token), label: ">>>>>>>>>")
 
       nil ->
         # Token issue and not optional, handle error

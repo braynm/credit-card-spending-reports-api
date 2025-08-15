@@ -2,6 +2,7 @@ defmodule CcSpendingApiWeb.Guardian do
   use Guardian, otp_app: :cc_spending_api
 
   alias CcSpendingApi.Authentication.Infra.EctoUserRepository
+  alias CcSpendingApi.Authentication.Domain.Dtos.AuthenticatedUser
 
   def subject_for_token(%{id: id}, _claims) do
     {:ok, to_string(id)}
@@ -9,7 +10,7 @@ defmodule CcSpendingApiWeb.Guardian do
 
   def resource_from_claims(%{"sub" => id}) do
     case EctoUserRepository.get_by_id(String.to_integer(id)) do
-      {:ok, user} -> {:ok, user}
+      {:ok, user} -> {:ok, AuthenticatedUser.from_resource(user)}
       {:error, _} -> {:error, :resource_not_found}
     end
   end

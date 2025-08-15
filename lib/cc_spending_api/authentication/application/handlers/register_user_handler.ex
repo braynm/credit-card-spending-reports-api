@@ -4,7 +4,7 @@ defmodule CcSpendingApi.Authentication.Application.Handlers.RegisterUserHandler 
   alias CcSpendingApi.Authentication.Domain.Repositories.UserRepository
   alias CcSpendingApi.Authentication.Domain.Services.AuthenticationService
   alias CcSpendingApi.Authentication.Domain.Services.UserRegistrationService
-  alias CcSpendingApi.Authentication.Domain.ValueObjects.RegisteredUser
+  alias CcSpendingApi.Authentication.Domain.Dtos.RegisteredUser
 
   alias CcSpendingApi.Repo
 

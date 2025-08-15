@@ -55,6 +55,7 @@ defmodule CcSpendingApiWeb.Router do
     get "/auth/logout", AuthController, :logout
 
     post "/statements/upload", StatementsController, :upload
+    get "/statements/txns", StatementsController, :list_txns
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

@@ -1,4 +1,4 @@
-defmodule CcSpendingApi.Authentication.Domain.ValueObjects.AuthenticatedUser do
+defmodule CcSpendingApi.Authentication.Domain.Dtos.AuthenticatedUser do
   alias CcSpendingApi.Authentication.Domain.Entities.User
 
   @type t :: %__MODULE__{id: integer(), email: String.t()}
@@ -12,6 +12,10 @@ defmodule CcSpendingApi.Authentication.Domain.ValueObjects.AuthenticatedUser do
   end
 
   def from_user(%User{} = user) do
+    new(user)
+  end
+
+  def from_resource(%User{} = user) do
     new(user)
   end
 

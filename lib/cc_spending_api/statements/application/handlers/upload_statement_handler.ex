@@ -5,12 +5,6 @@ defmodule CcSpendingApi.Statements.Application.Handlers.UploadStatementHandler d
   alias CcSpendingApi.Statements.Domain.Services.StatementProcessingServices
   alias CcSpendingApi.Statements.Application.Commands.UploadStatementTransaction
 
-  # @type deps :: %{
-  #         card_repository: CardStatementRepo.t(),
-  #         txn_repository: TransactionRepo.t(),
-  #         transaction_fn: function() | nil
-  #       }
-
   def handle(%UploadStatementTransaction{} = command, deps) do
     %StatementProcessingServices{
       file_processor: file_processor,
