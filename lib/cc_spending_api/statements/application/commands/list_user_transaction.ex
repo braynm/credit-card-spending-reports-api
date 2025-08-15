@@ -50,7 +50,7 @@ defmodule CcSpendingApi.Statements.Application.Commands.ListUserTransaction do
 
     limit =
       min(
-        Keyword.get(opts, :limit, Integer.to_string()) |> String.to_integer(),
+        Keyword.get(opts, :limit, Integer.to_string(@default_limit)) |> String.to_integer(),
         @max_limit
       )
 
