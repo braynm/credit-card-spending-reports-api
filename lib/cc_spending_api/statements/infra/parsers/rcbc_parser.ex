@@ -81,7 +81,15 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
 
   defp find_transaction_list(extracted_texts) when is_list(extracted_texts) do
     start_marker = Enum.find_index(extracted_texts, &(&1 == @txn_start_marker)) + 2
-    end_marker = Enum.find_index(extracted_texts, &(&1 == @txn_end_marker)) - 1
+
+    end_marker =
+      Enum.find_index(extracted_texts, fn txt ->
+        case txt do
+          @txn_end_marker -> true
+          ["BALANCE", "END" | _rest] -> true
+          _ -> false
+        end
+      end) - 1
 
     Enum.slice(extracted_texts, start_marker, end_marker - start_marker)
   end
@@ -91,16 +99,23 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   defp normalize_and_to_transaction(result) when is_list(result) do
     Enum.map(result, fn txn ->
       [sale_date, post_date | rest] = txn
-      {desc, [amt]} = Enum.split(rest, -1)
+      # {desc, [amt]} = Enum.split(rest, -1)
 
-      # TODO: convert to txn value object
-      %{
-        sale_date: to_utc_datetime(sale_date),
-        posted_date: to_utc_datetime(post_date),
-        encrypted_details: Enum.join(desc, " "),
-        encrypted_amount: normalize_amt(amt)
-      }
+      case Enum.split(rest, -1) do
+        {[], []} ->
+          %{}
+
+        {desc, [amt]} ->
+          # TODO: convert to txn value object
+          %{
+            sale_date: to_utc_datetime(sale_date),
+            posted_date: to_utc_datetime(post_date),
+            encrypted_details: Enum.join(desc, " "),
+            encrypted_amount: normalize_amt(amt)
+          }
+      end
     end)
+    |> Enum.filter(&(&1 !== %{}))
   end
 
   defp normalize_and_to_transaction(_result), do: parse(nil)
