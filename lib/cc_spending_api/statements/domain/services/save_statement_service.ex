@@ -14,7 +14,7 @@ defmodule CcSpendingApi.Statements.Domain.Services.SaveStatementService do
 
     card_stmt =
       params
-      |> Map.take(["filename", "file_checksum", "user_id"])
+      |> Map.take(["filename", "file_checksum", "user_id", "card_id"])
       |> Map.put("file_checksum", checksum)
 
     with {:ok, statement_entity} <- CardStatement.new(card_stmt),

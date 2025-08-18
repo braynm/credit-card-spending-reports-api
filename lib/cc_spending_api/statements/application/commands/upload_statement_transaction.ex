@@ -6,19 +6,20 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
 
   @type t :: %__MODULE__{
           user_id: integer(),
+          card_id: String.t(),
           bank: String.t(),
           pdf_pw: String.t(),
           file: Plug.Upload.t()
         }
 
-  defstruct [:user_id, :bank, :pdf_pw, :file]
+  defstruct [:user_id, :card_id, :bank, :pdf_pw, :file]
 
   defmodule Validator do
     use Ecto.Schema
     import Ecto.Changeset
 
     @supported_banks ["rcbc"]
-    @derive {Jason.Encoder, only: [:user_id, :bank, :pdf_pw, :file]}
+    @derive {Jason.Encoder, only: [:card_id, :user_id, :bank, :pdf_pw, :file]}
 
     @max_file_size Application.compile_env(
                      :cc_spending_api,
@@ -34,6 +35,7 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
     @primary_key false
     embedded_schema do
       field :file, :any, virtual: true
+      field :card_id, :string
       field :bank, :string
       field :user_id, :integer
       field :pdf_pw, :string
@@ -41,8 +43,8 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
 
     def changeset(params) do
       %__MODULE__{}
-      |> cast(params, [:file, :bank, :user_id, :pdf_pw])
-      |> validate_required([:file, :bank, :user_id, :pdf_pw])
+      |> cast(params, [:file, :card_id, :bank, :user_id, :pdf_pw])
+      |> validate_required([:file, :card_id, :bank, :user_id, :pdf_pw])
       |> validate_bank()
       |> validate_file()
     end
@@ -110,6 +112,7 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
           file: validated_data.file,
           bank: validated_data.bank,
           user_id: validated_data.user_id,
+          card_id: validated_data.card_id,
           pdf_pw: validated_data.pdf_pw
         }
 
