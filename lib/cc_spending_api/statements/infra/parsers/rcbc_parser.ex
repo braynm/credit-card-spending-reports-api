@@ -21,8 +21,8 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   @behaviour CcSpendingApi.Statements.Domain.BankParser
 
   # Markers used to identify the start and end of transaction data in RCBC statements
-  @txn_start_marker ["PREVIOUS", "STATEMENT", "BALANCE"]
-  @txn_end_marker ["BALANCE", "END"]
+  # TODO: some statement have no "PREVIOUS STATEMENT BALANCE" text for first's card
+  # transaction. We need to differentiate per pair
 
   @doc """
   Main parsing function that orchestrates the entire RCBC statement parsing process.
@@ -66,24 +66,52 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
 
   defp charlist_to_sigil(_extracted_texts), do: parse(nil)
 
-  defp find_transaction_page(extracted_texts) when is_list(extracted_texts) do
-    index =
-      Enum.find_index(extracted_texts, fn page ->
-        Enum.find(page, fn row -> row == @txn_start_marker end)
+  def find_transaction_page(extracted_texts) when is_list(extracted_texts) do
+    Enum.filter(extracted_texts, fn txt_list ->
+      Enum.any?(txt_list, fn txt ->
+        case txt do
+          ["SALE", "DATE", "POST", "DATE", "DESCRIPTION", "AMOUNT" | _rest] -> true
+          _ -> false
+        end
       end)
-
-    if is_nil(index) do
-      parse(nil)
-    else
-      Enum.at(extracted_texts, index)
-    end
+    end)
   end
 
   defp find_transaction_list(extracted_texts) when is_list(extracted_texts) do
-    start_marker = Enum.find_index(extracted_texts, &(&1 == @txn_start_marker)) + 2
-    end_marker = Enum.find_index(extracted_texts, &(&1 == @txn_end_marker)) - 1
+    extracted_texts
+    |> Enum.with_index()
+    |> Enum.flat_map(fn
+      {txts, 0} ->
+        header_index =
+          Enum.find_index(
+            txts,
+            &match?(["SALE", "DATE", "POST", "DATE", "DESCRIPTION", "AMOUNT" | _], &1)
+          ) + 4
 
-    Enum.slice(extracted_texts, start_marker, end_marker - start_marker)
+        end_of_page_index =
+          Enum.find_index(
+            txts,
+            &match?(["PAGE", _, "of", _], &1)
+          )
+
+        end_of_bal? = Enum.find_index(txts, &match?(["BALANCE", "END" | _], &1))
+
+        end_txn_marker =
+          if not is_nil(end_of_bal?), do: end_of_bal? - 2, else: end_of_page_index - 1
+
+        Enum.slice(txts, header_index..end_txn_marker)
+
+      {txts, _} ->
+        header_index =
+          Enum.find_index(
+            txts,
+            &match?(["SALE", "DATE", "POST", "DATE", "DESCRIPTION", "AMOUNT" | _], &1)
+          ) + 2
+
+        end_of_bal? = Enum.find_index(txts, &match?(["BALANCE", "END" | _], &1)) - 2
+
+        Enum.slice(txts, header_index..end_of_bal?)
+    end)
   end
 
   defp find_transaction_list(_), do: parse(nil)
@@ -91,16 +119,23 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   defp normalize_and_to_transaction(result) when is_list(result) do
     Enum.map(result, fn txn ->
       [sale_date, post_date | rest] = txn
-      {desc, [amt]} = Enum.split(rest, -1)
+      # {desc, [amt]} = Enum.split(rest, -1)
 
-      # TODO: convert to txn value object
-      %{
-        sale_date: to_utc_datetime(sale_date),
-        posted_date: to_utc_datetime(post_date),
-        encrypted_details: Enum.join(desc, " "),
-        encrypted_amount: normalize_amt(amt)
-      }
+      case Enum.split(rest, -1) do
+        {[], []} ->
+          %{}
+
+        {desc, [amt]} ->
+          # TODO: convert to txn value object
+          %{
+            sale_date: to_utc_datetime(sale_date),
+            posted_date: to_utc_datetime(post_date),
+            encrypted_details: Enum.join(desc, " "),
+            encrypted_amount: normalize_amt(amt)
+          }
+      end
     end)
+    |> Enum.filter(&(&1 !== %{}))
   end
 
   defp normalize_and_to_transaction(_result), do: parse(nil)

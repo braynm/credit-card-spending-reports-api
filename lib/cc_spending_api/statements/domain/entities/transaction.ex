@@ -72,6 +72,8 @@ defmodule CcSpendingApi.Statements.Domain.Entities.Transaction do
     })
   end
 
+  defp to_date_string(nil), do: nil
+
   defp to_date_string(%DateTime{} = datetime) do
     datetime
     |> DateTime.to_date()

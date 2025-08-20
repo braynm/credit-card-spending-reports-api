@@ -25,7 +25,8 @@ defmodule CcSpendingApi.Statements.Infra.EctoCardStatementRepository do
     attrs = %{
       file_checksum: statement.file_checksum,
       filename: statement.filename,
-      user_id: statement.user_id
+      user_id: statement.user_id,
+      card_id: statement.card_id
     }
 
     %CardStatementSchema{}

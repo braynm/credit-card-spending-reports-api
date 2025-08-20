@@ -6,6 +6,7 @@ defmodule CcSpendingApi.Statements.Infra.Schemas.CardStatementSchema do
   @foreign_key_type :binary_id
   schema "card_statement" do
     field :user_id, :integer
+    field :card_id, Ecto.UUID
     field :filename, :string
     field :file_checksum, :string
 
@@ -16,7 +17,7 @@ defmodule CcSpendingApi.Statements.Infra.Schemas.CardStatementSchema do
 
   def changeset(%__MODULE__{} = card_statement, attrs) do
     card_statement
-    |> cast(attrs, [:user_id, :file_checksum, :filename])
-    |> validate_required([:user_id, :file_checksum, :filename])
+    |> cast(attrs, [:user_id, :card_id, :file_checksum, :filename])
+    |> validate_required([:user_id, :card_id, :file_checksum, :filename])
   end
 end

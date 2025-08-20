@@ -29,7 +29,7 @@ defmodule CcSpendingApi.Statements.Application.Handlers.UploadStatementHandler d
                save_statement_and_transaction(
                  save_statement_service,
                  extracted_txns,
-                 command.user_id,
+                 command,
                  filename,
                  checksum
                ) do
@@ -47,11 +47,12 @@ defmodule CcSpendingApi.Statements.Application.Handlers.UploadStatementHandler d
     end
   end
 
-  defp save_statement_and_transaction(save_stmnt_service, txns, user_id, filename, checksum) do
+  defp save_statement_and_transaction(save_stmnt_service, txns, command, filename, checksum) do
     save_stmnt_service.save_statement_and_transaction(%{
       "filename" => filename,
       "file_checksum" => checksum,
-      "user_id" => user_id,
+      "user_id" => command.user_id,
+      "card_id" => command.card_id,
       "txns" => txns
     })
   end
