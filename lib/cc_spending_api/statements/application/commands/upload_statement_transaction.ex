@@ -18,7 +18,7 @@ defmodule CcSpendingApi.Statements.Application.Commands.UploadStatementTransacti
     use Ecto.Schema
     import Ecto.Changeset
 
-    @supported_banks ["rcbc"]
+    @supported_banks ["rcbc", "eastwest"]
     @derive {Jason.Encoder, only: [:card_id, :user_id, :bank, :pdf_pw, :file]}
 
     @max_file_size Application.compile_env(

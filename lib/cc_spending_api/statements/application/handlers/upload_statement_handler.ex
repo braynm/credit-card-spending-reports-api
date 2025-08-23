@@ -1,6 +1,7 @@
 defmodule CcSpendingApi.Statements.Application.Handlers.UploadStatementHandler do
   alias CcSpendingApi.Repo
   alias CcSpendingApi.Statements.Infra.Parsers.RcbcParser
+  alias CcSpendingApi.Statements.Infra.Parsers.EastWestParser
   alias CcSpendingApi.Statements.Domain.ValueObjects.FileChecksum
   alias CcSpendingApi.Statements.Domain.Services.StatementProcessingServices
   alias CcSpendingApi.Statements.Application.Commands.UploadStatementTransaction
@@ -58,8 +59,9 @@ defmodule CcSpendingApi.Statements.Application.Handlers.UploadStatementHandler d
   end
 
   defp txn_parse(bank, extracted_texts) do
-    case bank do
+    case String.downcase(bank) do
       "rcbc" -> RcbcParser.parse(extracted_texts)
+      "eastwest" -> EastWestParser.parse(extracted_texts)
       _ -> {:error, :unsupported_bank}
     end
   end

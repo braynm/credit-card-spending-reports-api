@@ -119,7 +119,6 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
   defp normalize_and_to_transaction(result) when is_list(result) do
     Enum.map(result, fn txn ->
       [sale_date, post_date | rest] = txn
-      # {desc, [amt]} = Enum.split(rest, -1)
 
       case Enum.split(rest, -1) do
         {[], []} ->
