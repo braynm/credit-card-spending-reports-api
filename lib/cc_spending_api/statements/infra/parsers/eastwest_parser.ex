@@ -129,10 +129,9 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.EastWestParser do
   defp find_transaction_list(_), do: parse(nil)
 
   defp normalize_and_to_transaction(result, statement_date) when is_list(result) do
-    Enum.map(result, fn txn ->
-      # [ "APR", "21", "APR", "22", "GUARDIAN", "-", "T3", "#02-29", "SINGAPORE", "SGP", "SGD", "4.17", "185.25" ]
-      [_, _, year] = statement_date
+    [_, _, year] = statement_date
 
+    Enum.map(result, fn txn ->
       months = %{
         "JAN" => "01",
         "FEB" => "02",
@@ -149,30 +148,17 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.EastWestParser do
       }
 
       with [sale_m, sale_d, post_m, post_d | rest] <- txn do
-        reversed = Enum.reverse(rest)
-
-        case reversed do
-          # Pattern match: amount, foreign_amount, currency, country, ...transaction_parts
-          [amount, _foreign_amount, currency | transaction_parts]
-          when byte_size(currency) == 3 ->
-            %{
-              encrypted_details: transaction_parts |> Enum.reverse() |> Enum.join(" "),
-              encrypted_amount: normalize_amt(amount),
-              sale_date: to_utc_datetime("#{year}-#{months[sale_m]}-#{sale_d}"),
-              posted_date: to_utc_datetime("#{year}-#{months[post_m]}-#{post_d}")
-            }
-
-          # Pattern: just amount, ...transaction_parts
-          [amount | transaction_parts] ->
-            %{
-              encrypted_details: transaction_parts |> Enum.reverse() |> Enum.join(" "),
-              encrypted_amount: normalize_amt(amount),
-              sale_date: to_utc_datetime("#{year}-#{months[sale_m]}-#{sale_d}"),
-              posted_date: to_utc_datetime("#{year}-#{months[post_m]}-#{post_d}")
-            }
-
-          _ ->
+        case split_txn_desc_and_amount(rest) do
+          {nil, nil} ->
             %{}
+
+          {amt, desc} ->
+            %{
+              encrypted_details: maybe_normalize_payment_txn(Enum.join(desc, " ")),
+              encrypted_amount: normalize_amt(amt),
+              sale_date: to_utc_datetime("#{year}-#{months[sale_m]}-#{sale_d}"),
+              posted_date: to_utc_datetime("#{year}-#{months[post_m]}-#{post_d}")
+            }
         end
       else
         _ -> %{}
@@ -182,6 +168,39 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.EastWestParser do
   end
 
   defp normalize_and_to_transaction(_result, _), do: parse(nil)
+
+  defp maybe_normalize_payment_txn(desc) do
+    # normalize description for payment txns 
+    # to make query faster
+    case desc do
+      "CSHPYMNT" <> _ -> "PAYMENT"
+      "ATM PAYMENT" -> "PAYMENT"
+      _ -> desc
+    end
+  end
+
+  # Match monetary amounts: optional negative, digits with optional commas, optional decimal
+  def split_txn_desc_and_amount([]), do: {nil, nil}
+
+  def split_txn_desc_and_amount(txn) do
+    [amount | middle_reversed] = Enum.reverse(txn)
+
+    transaction_parts =
+      middle_reversed
+      |> maybe_remove_foreign_currency()
+      |> Enum.reverse()
+
+    {amount, transaction_parts}
+  end
+
+  defp maybe_remove_foreign_currency([foreign_amt, currency | rest] = txn)
+       when byte_size(currency) == 3 do
+    if String.match?(foreign_amt, ~r/^-?\d{1,3}(?:,\d{3})*(?:\.\d+)?$/),
+      do: rest,
+      else: txn
+  end
+
+  defp maybe_remove_foreign_currency(parts), do: parts
 
   defp normalize_amt(amt) do
     amt = String.trim(amt)

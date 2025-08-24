@@ -116,6 +116,16 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
 
   defp find_transaction_list(_), do: parse(nil)
 
+  defp maybe_normalize_payment_txn(desc) do
+    # normalize description for payment txns 
+    # to make query faster
+    case desc do
+      "CASH PAYMENT" <> _ -> "PAYMENT"
+      "ATM PAYMENT" -> "PAYMENT"
+      _ -> desc
+    end
+  end
+
   defp normalize_and_to_transaction(result) when is_list(result) do
     Enum.map(result, fn txn ->
       [sale_date, post_date | rest] = txn
@@ -129,12 +139,16 @@ defmodule CcSpendingApi.Statements.Infra.Parsers.RcbcParser do
           %{
             sale_date: to_utc_datetime(sale_date),
             posted_date: to_utc_datetime(post_date),
-            encrypted_details: Enum.join(desc, " "),
+            encrypted_details: maybe_normalize_payment_txn(Enum.join(desc, " ")),
             encrypted_amount: normalize_amt(amt)
           }
       end
     end)
-    |> Enum.filter(&(&1 !== %{}))
+    # |> Enum.filter(&(&1 !== %{}))
+    |> Enum.filter(fn txn ->
+      # txn !== %{} and not String.starts_with?(txn.encrypted_details, "REV")
+      txn !== %{}
+    end)
   end
 
   defp normalize_and_to_transaction(_result), do: parse(nil)
